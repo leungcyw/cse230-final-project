@@ -1,4 +1,5 @@
 # CSE 230: Elsa and Olaf
+Group Members: Eric Ke (ericke8), Christina Leung (leungcyw), Yiming Zhao (yimingnzhao)
 # Introduction
 
 For this project, we would like to implement a spinoff of the popular game [Fireboy and Watergirl](https://www.coolmathgames.com/0-fireboy-and-water-girl-in-the-forest-temple), Elsa and Olaf. In our game, we seek to create a world wherein two characters must collaborate to overcome obstacles, collect tokens, and reach the exit door. We also aim to introduce a fun, new, interactive feature where users can provide a text file as input, which will then be parsed into a unique level.
