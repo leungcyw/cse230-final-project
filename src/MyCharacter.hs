@@ -11,19 +11,15 @@ module MyCharacter
   , height, width
   ) where
 import Types
-import Control.Applicative ((<|>))
 import Control.Monad (guard)
 import Data.Maybe (fromMaybe)
-import Data.List
+import Data.List ( delete )
 
 import Control.Lens hiding ((<|), (|>), (:>), (:<))
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.State
 import Control.Monad.Extra (orM)
-import Data.Sequence (Seq(..), (<|))
-import qualified Data.Sequence as S
 import Linear.V2 (V2(..), _x, _y)
-import System.Random (Random(..), newStdGen)
 
 makeLenses ''Game
 

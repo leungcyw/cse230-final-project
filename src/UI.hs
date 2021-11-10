@@ -26,8 +26,6 @@ import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Center as C
 import Control.Lens ((^.))
 import qualified Graphics.Vty as V
-import Data.Sequence (Seq)
-import qualified Data.Sequence as S
 import Linear.V2 (V2(..))
 
 -- App definition
