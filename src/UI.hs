@@ -42,7 +42,7 @@ main = do
   chan <- newBChan 10
   forkIO $ forever $ do
     writeBChan chan Tick
-    threadDelay 100000 -- controls how fast game moves
+    threadDelay 10000 -- controls how fast game moves
   g <- initGame
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
@@ -50,13 +50,13 @@ main = do
 
 -- Handles keyboard events
 handleEvent :: Game -> BrickEvent Name Tick -> EventM Name (Next Game)
-handleEvent g (VtyEvent (V.EvKey V.KUp []))         = continue $ step UpDir g
-handleEvent g (VtyEvent (V.EvKey V.KDown []))       = continue $ step DownDir g
-handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ step RightDir g
-handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ step LeftDir g
+handleEvent g (VtyEvent (V.EvKey V.KUp []))         = continue $ step Neutral True g
+handleEvent g (VtyEvent (V.EvKey V.KDown []))       = continue $ step DownDir False g
+handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ step RightDir False g
+handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ step LeftDir False g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = liftIO initGame >>= continue
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt g
-handleEvent g _                                     = continue $ noActionStep g
+handleEvent g _                                     = continue $ step Neutral False g
 
 -- Draws game
 drawUI :: Game -> [Widget Name]
@@ -104,7 +104,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt
     cellAt c
-      | c == g ^. myCharacter = MyCharacter
+      | c == (toGridCoord (g ^. myCharacter ^. loc)) = MyCharacter
       | c `elem` g ^. tokens = Token
       | c `elem` g ^. exits  = Exit
       | otherwise            = Empty
