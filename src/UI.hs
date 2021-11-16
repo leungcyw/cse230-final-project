@@ -56,7 +56,7 @@ handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ step RightDir g
 handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ step LeftDir g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = liftIO initGame >>= continue
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt g
-handleEvent g _                                     = continue g
+handleEvent g _                                     = continue $ noActionStep g
 
 -- Draws game
 drawUI :: Game -> [Widget Name]

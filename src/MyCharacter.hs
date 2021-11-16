@@ -4,6 +4,7 @@
 module MyCharacter
   ( initGame
   , step
+  , noActionStep
   , move
   , Game(..)
   , Direction(..)
@@ -22,6 +23,12 @@ import Control.Monad.Extra (orM)
 import Linear.V2 (V2(..), _x, _y)
 
 makeLenses ''Game
+
+noActionStep :: Game -> Game
+noActionStep s = flip execState s . runMaybeT $ do
+  MaybeT (Just <$> modify moveGravity) -- jump
+
+
 
 -- | Step triggered by action
 step :: Direction -> Game -> Game
@@ -58,6 +65,34 @@ eatToken g@Game { _tokens = t } = do
     else
       g
 
+
+canJump :: Game -> Bool
+canJump g@Game {_myCharacter = s} = 
+  let
+    coord = getCoord g;
+    y_val = coord ^._y
+  in
+    if (y_val == 0)    -- TODO: change this check to check both x and y coords for platforms
+      then
+        True
+      else
+        False
+
+gravity :: Game -> Coord
+gravity g@Game { _myCharacter = s } = 
+  let coord = getCoord g;
+      y_val = coord ^._y
+  in
+    do
+      if (y_val == 0)           -- TODO: check if on platform
+        then
+          coord
+        else
+          s & _y %~ (\y -> y-1)   -- TODO: change 0 to some platform y
+
+moveGravity :: Game -> Game
+moveGravity g@Game { _myCharacter = s} = g & myCharacter .~ gravity g
+
 -- Represents current game state
 gameState :: State Game ()
 gameState = do
@@ -69,9 +104,9 @@ move d g@Game { _myCharacter = s } = g & myCharacter .~ nextPos d g
 
 -- Finds next position of character based on direction
 nextPos :: Direction -> Game -> Coord
-nextPos d Game { _myCharacter = a }
-  | d == UpDir = a & _y %~ (\y -> if (y + 1) < height then y + 1 else y)
-  | d == DownDir = a & _y %~ (\y -> if (y - 1) >= 0 then y - 1 else y)
+nextPos d g@Game { _myCharacter = a }
+  | d == UpDir = if canJump g then a & _y %~ (\y -> if ((y + 2) < height && canJump g) then y + 2 else y) else gravity g
+  | d == DownDir = a & _y %~ (\y -> y)
   | d == RightDir = a & _x %~ (\x -> if (x + 1) < width then x + 1 else x)
   | d == LeftDir = a & _x %~ (\x -> if (x - 1) >= 0 then x - 1 else x)
 nextPos _ _ = error "invalid direction??"
