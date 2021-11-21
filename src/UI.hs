@@ -104,15 +104,21 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt
     cellAt c
-      | c == (toGridCoord (g ^. myCharacter ^. loc)) = MyCharacter
+      | c == (toGridCoord (g ^. elsa ^. loc)) = Elsa
+      | c == (toGridCoord (g ^. olaf ^. loc)) = Olaf
       | c `elem` g ^. tokens = Token
+      | c `elem` g ^. lakesE = LakeE
+      | c `elem` g ^. lakesO = LakeO
       | c `elem` g ^. exits  = Exit
       | otherwise            = Empty
 
 -- Renders cell based on type
 drawCell :: Cell -> Widget Name
-drawCell MyCharacter = withAttr myCharacterAttr cellWidth
+drawCell Elsa = withAttr elsaAttr cellWidth
+drawCell Olaf = withAttr olafAttr cellWidth
 drawCell Token  = withAttr tokenAttr cellWidth
+drawCell LakeE = withAttr lakeEAttr cellWidth
+drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
 
@@ -122,17 +128,23 @@ cellWidth = str "  "
 -- Maps cell type to appearance
 theMap :: AttrMap
 theMap = attrMap V.defAttr
-  [ (myCharacterAttr, V.blue `on` V.blue)
+  [ (elsaAttr, V.blue `on` V.blue)
+  , (olafAttr, V.yellow `on` V.yellow)
   , (tokenAttr, V.red `on` V.red)
+  , (lakeEAttr, V.yellow `on` V.yellow)
+  , (lakeOAttr, V.blue `on` V.blue)
   , (exitAttr, V.green `on` V.green)
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
-myCharacterAttr, tokenAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr :: AttrName
-myCharacterAttr = "myCharacterAttr"
+elsaAttr, tokenAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr :: AttrName
+elsaAttr = "elsaAttr"
+olafAttr = "olafAttr"
 tokenAttr = "tokenAttr"
 exitAttr = "exitAttr"
 exitMsgAttr = "exitMsgAttr"
 emptyAttr = "emptyAttr"
 gameOverAttr = "gameOver"
+lakeEAttr = "lakeEAttr"
+lakeOAttr = "lakeOAttr"

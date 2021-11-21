@@ -4,10 +4,13 @@ import Linear.V2 (V2(..), _x, _y)
 
 -- Used in MyCharacter.hs
 data Game = Game
-  { _myCharacter  :: Character
+  { _elsa         :: Character
+  , _olaf         :: Character
   , _dir          :: Direction
   , _jump         :: Bool
   , _tokens       :: [GridCoord]
+  , _lakesE       :: [GridCoord]
+  , _lakesO       :: [GridCoord]
   , _exits        :: [GridCoord]
   , _dead         :: Bool
   , _done         :: Bool
@@ -53,4 +56,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = MyCharacter | Token | Exit | Empty
+data Cell = Elsa | Olaf | Token | Exit | Empty | LakeE | LakeO
