@@ -50,13 +50,20 @@ main = do
 
 -- Handles keyboard events
 handleEvent :: Game -> BrickEvent Name Tick -> EventM Name (Next Game)
-handleEvent g (VtyEvent (V.EvKey V.KUp []))         = continue $ step Neutral True g
-handleEvent g (VtyEvent (V.EvKey V.KDown []))       = continue $ step DownDir False g
-handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ step RightDir False g
-handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ step LeftDir False g
+handleEvent g (VtyEvent (V.EvKey V.KUp []))         = continue $ step 'e' Neutral True g
+handleEvent g (VtyEvent (V.EvKey V.KDown []))       = continue $ step 'e' DownDir False g
+handleEvent g (VtyEvent (V.EvKey V.KRight []))      = continue $ step 'e' RightDir False g
+handleEvent g (VtyEvent (V.EvKey V.KLeft []))       = continue $ step 'e' LeftDir False g
+
+handleEvent g (VtyEvent (V.EvKey (V.KChar 'w') [])) = continue $ step 'o' Neutral True g
+handleEvent g (VtyEvent (V.EvKey (V.KChar 's') [])) = continue $ step 'o' DownDir False g
+handleEvent g (VtyEvent (V.EvKey (V.KChar 'd') [])) = continue $ step 'o' RightDir False g
+handleEvent g (VtyEvent (V.EvKey (V.KChar 'a')[]))  = continue $ step 'o' LeftDir False g
+
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = liftIO initGame >>= continue
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt g
-handleEvent g _                                     = continue $ step Neutral False g
+
+handleEvent g _                                     = continue  $ step 'x' Neutral False g
 
 -- Draws game
 drawUI :: Game -> [Widget Name]
@@ -106,7 +113,8 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellAt c
       | c == (toGridCoord (g ^. elsa ^. loc)) = Elsa
       | c == (toGridCoord (g ^. olaf ^. loc)) = Olaf
-      | c `elem` g ^. tokens = Token
+      | c `elem` g ^. tokensE = TokenE
+      | c `elem` g ^. tokensO = TokenO
       | c `elem` g ^. lakesE = LakeE
       | c `elem` g ^. lakesO = LakeO
       | c `elem` g ^. exits  = Exit
@@ -116,7 +124,8 @@ drawGrid g = withBorderStyle BS.unicodeBold
 drawCell :: Cell -> Widget Name
 drawCell Elsa = withAttr elsaAttr cellWidth
 drawCell Olaf = withAttr olafAttr cellWidth
-drawCell Token  = withAttr tokenAttr cellWidth
+drawCell TokenE = withAttr tokenEAttr cellWidth
+drawCell TokenO = withAttr tokenOAttr cellWidth
 drawCell LakeE = withAttr lakeEAttr cellWidth
 drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
@@ -129,19 +138,21 @@ cellWidth = str "  "
 theMap :: AttrMap
 theMap = attrMap V.defAttr
   [ (elsaAttr, V.blue `on` V.blue)
-  , (olafAttr, V.yellow `on` V.yellow)
-  , (tokenAttr, V.red `on` V.red)
-  , (lakeEAttr, V.yellow `on` V.yellow)
+  , (olafAttr, V.red `on` V.red)
+  , (tokenEAttr, V.cyan `on` V.cyan)
+  , (tokenOAttr, V.magenta `on` V.magenta)
+  , (lakeEAttr, V.red `on` V.red)
   , (lakeOAttr, V.blue `on` V.blue)
   , (exitAttr, V.green `on` V.green)
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   ]
 
-elsaAttr, tokenAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr :: AttrName
+elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr :: AttrName
 elsaAttr = "elsaAttr"
 olafAttr = "olafAttr"
-tokenAttr = "tokenAttr"
+tokenEAttr = "tokenEAttr"
+tokenOAttr = "tokenOAttr"
 exitAttr = "exitAttr"
 exitMsgAttr = "exitMsgAttr"
 emptyAttr = "emptyAttr"

@@ -10,7 +10,7 @@ module MyCharacter
   , Direction(..)
   , Character(..)
   , lakesE, elsa, lakesO, olaf
-  , dead, tokens, exits, done
+  , dead, tokensE, tokensO, exits, done
   , height, width
   , hv, vv, loc
   , toGridCoord
@@ -37,13 +37,14 @@ toGridCoord :: PreciseCoord -> GridCoord
 toGridCoord (V2 x_f y_f) = (V2 (floor x_f) (floor y_f))
 
 -- | Step triggered by action
-step :: Direction -> Bool -> Game -> Game
-step d j s = flip execState s . runMaybeT $ do
+step :: Char -> Direction -> Bool -> Game -> Game
+step c d j s = flip execState s . runMaybeT $ do
   -- Make sure the game isn't paused or over
   MaybeT $ guard . not <$> orM [use dead, use done]
 
-  MaybeT (Just <$> modify (move d j)) -- move
-  MaybeT (Just <$> modify eatToken) -- check for token
+  MaybeT (Just <$> modify (move c d j)) -- move
+  MaybeT (Just <$> modify eatTokenE) -- check for token
+  MaybeT (Just <$> modify eatTokenO) -- check for token
   MaybeT (Just <$> modify die) -- check if dead
   MaybeT (Just <$> modify checkDone) -- check if done
 
@@ -57,19 +58,27 @@ die g@Game { _lakesE = l, _lakesO = o } = do
 
 -- Done if tokens are gone and in front of exit door
 checkDone :: Game -> Game
-checkDone g@Game { _tokens = t, _exits = e, _done = d } = do
-  if null t && (toGridCoord(getCoord g 'e') `elem` e) && (toGridCoord(getCoord g 'o') `elem` e)
+checkDone g@Game { _tokensE = t1, _tokensO = t2, _exits = e, _done = d } = do
+  if null t1 && null t2 && (toGridCoord(getCoord g 'e') `elem` e) && (toGridCoord(getCoord g 'o') `elem` e)
     then
       g & done .~ True
     else
       g
 
 -- Eat token if current position == token
-eatToken :: Game -> Game
-eatToken g@Game { _tokens = t } = do
+eatTokenE :: Game -> Game
+eatTokenE g@Game { _tokensE = t } = do
   if (toGridCoord (getCoord g 'e')) `elem` t
     then
-      g & tokens .~ delete (toGridCoord (getCoord g 'e')) t
+      g & tokensE .~ delete (toGridCoord (getCoord g 'e')) t
+    else
+      g
+
+eatTokenO :: Game -> Game
+eatTokenO g@Game { _tokensO = t } = do
+  if (toGridCoord (getCoord g 'o')) `elem` t
+    then
+      g & tokensO .~ delete (toGridCoord (getCoord g 'o')) t
     else
       g
 
@@ -92,16 +101,19 @@ gameState = do
   return ()
 
 -- Move charcter in necessary direction
-move :: Direction -> Bool -> Game -> Game
-move d j g@Game { _elsa = s } = g & elsa .~ nextPos d j g
+move :: Char -> Direction -> Bool -> Game -> Game
+move c Neutral False g@Game { _elsa = e, _olaf = o } = g & (elsa .~ nextPos e Neutral False g) & (olaf .~ nextPos o Neutral False g)
+move c d j g@Game { _elsa = e, _olaf = o }
+  | c == 'e' = g & elsa .~ nextPos e d j g
+  | c == 'o' = g & olaf .~ nextPos o d j g
 
 -- Finds next position of character based on direction
-nextPos :: Direction -> Bool -> Game -> Character
-nextPos d j g@Game { _elsa = a} =
+nextPos :: Character -> Direction -> Bool -> Game -> Character
+nextPos c@Character {} d j g@Game {} =
   do
-    let new_c = nextVv d j (nextHv d a)
-    let h_cand = ((a & _loc) ^. _x) + (speedTable !! (new_c & _hv))
-    let v_cand = ((a & _loc) ^. _y) + (speedTable !! (new_c & _vv))
+    let new_c = nextVv d j (nextHv d c)
+    let h_cand = ((c & _loc) ^. _x) + (speedTable !! (new_c & _hv))
+    let v_cand = ((c & _loc) ^. _y) + (speedTable !! (new_c & _vv))
     let new_h
           | h_cand < 0 = 0
           | h_cand > fromIntegral width - 1 = fromIntegral width - 1
@@ -136,8 +148,8 @@ nextVv d j c@Character { _vv = v}
 
 -- Get current coordinates of character
 getCoord :: Game -> Char -> PreciseCoord
-getCoord Game { _dir = d, _elsa = a } 'e' = a & _loc
-getCoord Game { _dir = d, _olaf = a } 'o' = a & _loc
+getCoord Game { _elsa = a } 'e' = a & _loc
+getCoord Game { _olaf = a } 'o' = a & _loc
 
 -- Initialize game with token and character locations
 initGame :: IO Game
@@ -155,11 +167,11 @@ initGame = do
             , _hv = div maxSpeed 2
             , _vv = div maxSpeed 2
           }
-        , _tokens  = [V2 3 0, V2 5 2, V2 10 2, V2 15 2]
-        , _exits = [V2 25 0]
+        , _tokensE  = [V2 3 0, V2 5 2, V2 10 2, V2 15 2]
+        , _tokensO  = [V2 45 4, V2 38 0]
+        , _exits = [V2 25 0, V2 26 0]
         , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0]
         , _lakesO = [V2 40 0, V2 41 0, V2 42 0]
-        , _dir = Neutral
         , _jump = False
         , _dead   = False
         , _done   = False

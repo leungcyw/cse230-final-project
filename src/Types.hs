@@ -6,9 +6,9 @@ import Linear.V2 (V2(..), _x, _y)
 data Game = Game
   { _elsa         :: Character
   , _olaf         :: Character
-  , _dir          :: Direction
   , _jump         :: Bool
-  , _tokens       :: [GridCoord]
+  , _tokensE      :: [GridCoord]
+  , _tokensO      :: [GridCoord]
   , _lakesE       :: [GridCoord]
   , _lakesO       :: [GridCoord]
   , _exits        :: [GridCoord]
@@ -56,4 +56,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = Elsa | Olaf | Token | Exit | Empty | LakeE | LakeO
+data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO
