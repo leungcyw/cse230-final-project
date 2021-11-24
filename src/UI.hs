@@ -7,7 +7,7 @@ import Control.Concurrent (threadDelay, forkIO)
 import Data.Maybe (fromMaybe)
 
 import Types
-import MyCharacter
+import Env
 
 import Brick
   ( App(..), AttrMap, BrickEvent(..), EventM, Next, Widget

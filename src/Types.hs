@@ -2,7 +2,7 @@ module Types where
 
 import Linear.V2 (V2(..), _x, _y)
 
--- Used in MyCharacter.hs
+-- Used in Env.hs
 data Game = Game
   { _elsa         :: Character
   , _olaf         :: Character

@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
-module MyCharacter
+module Env
   ( initGame
   , step
   -- , noActionStep
@@ -168,10 +168,10 @@ initGame = do
             , _vv = div maxSpeed 2
           }
         , _tokensE  = [V2 3 0, V2 5 2, V2 10 2, V2 15 2]
-        , _tokensO  = [V2 45 4, V2 38 0]
+        , _tokensO  = [V2 35 4, V2 28 0]
         , _exits = [V2 25 0, V2 26 0]
         , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0]
-        , _lakesO = [V2 40 0, V2 41 0, V2 42 0]
+        , _lakesO = [V2 30 0, V2 31 0, V2 32 0]
         , _jump = False
         , _dead   = False
         , _done   = False
