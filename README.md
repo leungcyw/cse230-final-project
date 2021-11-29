@@ -9,7 +9,7 @@ For this project, we would like to implement a spinoff of the popular game [Fire
 *A screenshot of the original Fireboy and Watergirl game*
 
 # Game Mechanics
-The two characters can be controlled using keyboard input--one character will be moved using the up, left, and down arrow keys, while the other will be controlled using the characters "A," "W," and "D."
+The two characters can be controlled using keyboard input--one character will be moved using the up, left, right, and down arrow keys, while the other will be controlled using the characters "A," "W," "D," and “S.”
 
 The primary obstacle of our game is the pools of liquid (where characters can only pass through liquid of the same color as their body). They will also need to enlist the help of platforms that are controlled by levers and buttons to reach the exit door.
 
