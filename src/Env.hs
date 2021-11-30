@@ -256,7 +256,7 @@ initGame = do
             , _hv = div maxSpeed 2
             , _vv = div maxSpeed 2
           }
-        , _tokensE  = [V2 3 1, V2 5 2, V2 10 2, V2 15 2]
+        , _tokensE  = [V2 3 9, V2 5 10, V2 10 10, V2 15 12]
         , _tokensO  = [V2 35 4, V2 28 1]
         , _exits = [V2 25 1, V2 26 1]
         , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ [V2 0 0, V2 1 0, V2 2 0, V2 3 0, V2 4 0, V2 5 0, V2 6 0, V2 7 0, V2 8 0, V2 9 0, V2 10 0, V2 11 0, V2 12 0, V2 13 0, V2 14 0, V2 15 0, V2 16 0, V2 17 0, V2 18 0, V2 19 0, V2 20 0, V2 21 0, V2 22 0, V2 23 0, V2 24 0, V2 25 0, V2 26 0, V2 27 0, V2 28 0, V2 29 0, V2 30 0, V2 31 0, V2 32 0, V2 33 0, V2 34 0, V2 35 0, V2 36 0, V2 37 0, V2 38 0, V2 39 0, V2 40 0, V2 41 0, V2 42 0, V2 43 0, V2 44 0, V2 45 0, V2 46 0, V2 47 0, V2 48 0, V2 49 0]
