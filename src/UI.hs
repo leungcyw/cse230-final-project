@@ -145,6 +145,7 @@ drawCell Exit  = withAttr exitAttr cellWidth
 drawCell Platform = withAttr platformAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
 -}
+
 cellWidth :: Widget Name
 cellWidth = str "  "
 

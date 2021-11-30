@@ -252,6 +252,14 @@ skyLakesO = [V2 20 15, V2 21 15, V2 22 16]
 lakes :: [GridCoord]
 lakes = [V2 18 14]
 
+boundaryPlatforms :: [GridCoord]
+boundaryPlatforms = ground ++ wall_l ++ wall_r ++ ceiling
+  where
+    ground  = [V2 x 0 | x <- [(-1)..width]]
+    wall_l  = [V2 (-1) y | y <- [1..height]]
+    wall_r  = [V2 width y | y <- [1..height]]
+    ceiling = [V2 x height | x <- [0..(width-1)]] 
+
 -- Initialize game with token and character locations
 -- NOTE: lakes are platforms too. They're just scary platforms that can kill you :)  -- NZ
 initGame :: IO Game
@@ -272,7 +280,7 @@ initGame = do
         , _tokensE  = [V2 3 9, V2 5 10, V2 10 10, V2 15 12]
         , _tokensO  = [V2 35 4, V2 28 1]
         , _exits = [V2 25 1, V2 26 1]
-        , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ [ V2 (-1) (-1), V2 (-1) 0, V2 0 (-1), V2 0 0, V2 1 0, V2 2 0, V2 3 0, V2 4 0, V2 5 0, V2 6 0, V2 7 0, V2 8 0, V2 9 0, V2 10 0, V2 11 0, V2 12 0, V2 13 0, V2 14 0, V2 15 0, V2 16 0, V2 17 0, V2 18 0, V2 19 0, V2 20 0, V2 21 0, V2 22 0, V2 23 0, V2 24 0, V2 25 0, V2 26 0, V2 27 0, V2 28 0, V2 29 0, V2 30 0, V2 31 0, V2 32 0, V2 33 0, V2 34 0, V2 35 0, V2 36 0, V2 37 0, V2 38 0, V2 39 0, V2 40 0, V2 41 0, V2 42 0, V2 43 0, V2 44 0, V2 45 0, V2 46 0, V2 47 0, V2 48 0, V2 49 0]
+        , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ boundaryPlatforms
         , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0] ++ skyLakesE ++ lakes
         , _lakesO = [V2 30 0, V2 31 0, V2 32 0] ++ skyLakesO ++ lakes
         , _deathLakes = lakes
