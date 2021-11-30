@@ -115,6 +115,14 @@ onPlatform c@Character {_loc = l} g@Game {_platform = p} =
       else
         (-1)
 
+-- collisionCand returns a Bool depending on if a candidate location would cause a collision
+collisionCand :: GridCoord -> Game -> Bool
+collisionCand cand@(V2 x y) g@Game {_platform = p} = 
+    if cand `elem` p
+      then
+        True
+      else
+        False
 
 collisionV :: GridCoord -> Game -> Bool
 collisionV (V2 x y) g@Game {_platform = p} = 
@@ -175,7 +183,7 @@ nextPos c@Character {_loc = l} d j g@Game {} =
           | otherwise = h_cand                                         -- default: move to candidate horizontal position
     let new_v
           | v_cand > fromIntegral height - 1 = fromIntegral height - 1 -- max vertical position is (height - 1)
-          | platform_res > 0 && not j = fromIntegral platform_res      -- vertical position is platform if on platform and not jumping
+          | (collisionCand (toGridCoord (V2 h_cand v_cand)) g) = fromIntegral platform_res      -- vertical position is platform if on platform and not jumping
           | otherwise = v_cand                                         -- default: move to candidate vertical position
 
     new_c & loc .~ (V2 new_h new_v :: PreciseCoord)
