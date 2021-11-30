@@ -43,10 +43,10 @@ step c d j s = flip execState s . runMaybeT $ do
   MaybeT $ guard . not <$> orM [use dead, use done]
 
   MaybeT (Just <$> modify (move c d j)) -- move
-  MaybeT (Just <$> modify eatTokenE) -- check for token
-  MaybeT (Just <$> modify eatTokenO) -- check for token
-  MaybeT (Just <$> modify die) -- check if dead
-  MaybeT (Just <$> modify checkDone) -- check if done
+  MaybeT (Just <$> modify eatTokenE)    -- check for token
+  MaybeT (Just <$> modify eatTokenO)    -- check for token
+  MaybeT (Just <$> modify die)          -- check if dead
+  MaybeT (Just <$> modify checkDone)    -- check if done
 
 die :: Game -> Game
 die g@Game { _lakesE = e, _lakesO = o } = do
@@ -63,10 +63,10 @@ nextToBadLake c cs =
   let
     x_coord = c ^. _x;
     y_coord = c ^. _y;
-    c1' = V2 (x_coord + 1) y_coord;
-    c2' = V2 (x_coord - 1) y_coord;
-    c3' = V2 x_coord (y_coord + 1);
-    c4' = V2 x_coord (y_coord - 1)
+    c1'     = V2 (x_coord + 1) y_coord;
+    c2'     = V2 (x_coord - 1) y_coord;
+    c3'     = V2 x_coord (y_coord + 1);
+    c4'     = V2 x_coord (y_coord - 1)
   in
     if c1' `elem` cs || c2' `elem` cs || c3' `elem` cs || c4' `elem` cs
       then
@@ -106,7 +106,7 @@ onPlatform :: Character -> Game -> Int
 onPlatform c@Character {_loc = l} g@Game {_platform = p} =
   let
     coord = toGridCoord l;
-    y_val = (coord ^. _y) - 1; -- subtract 1 to check if on top of a platform
+    y_val = (coord ^. _y) - 1; -- subtract 1 to check if character is on top of a platform
     x_val = coord ^. _x
   in
     if (V2 x_val y_val) `elem` p   
@@ -119,10 +119,9 @@ onPlatform c@Character {_loc = l} g@Game {_platform = p} =
 collisionV :: GridCoord -> Game -> Bool
 collisionV (V2 x y) g@Game {_platform = p} = 
   let 
-    hi_c = (V2 x (y+1));
-    lo_c = (V2 x (y-1))
+    hi_c = (V2 x (y+1))
   in
-    if hi_c `elem` p || lo_c `elem` p
+    if hi_c `elem` p
       then
         True
       else
@@ -136,10 +135,15 @@ collisionH (V2 x y) g@Game {_platform = p} d =
     right_c = (V2 (x+1) y)
   in
     case d of
+      -- collides if moving in direction of obstacle
       RightDir -> if right_c `elem` p then True else False
       LeftDir  -> if left_c `elem` p then True else False
+
+      -- collides if character will run into obstacle
       Neutral  -> if right_c `elem` p || left_c `elem` p then True else False
-      DownDir  -> False -- cannot collide horizontally when moving down
+
+      -- cannot collide horizontally when moving down
+      DownDir  -> False
       
 
 
@@ -159,31 +163,34 @@ move c d j g@Game { _elsa = e, _olaf = o }
 nextPos :: Character -> Direction -> Bool -> Game -> Character
 nextPos c@Character {_loc = l} d j g@Game {} =
   do
-    let collision_v = collisionV (toGridCoord l) g
-    let collision_h = collisionH (toGridCoord l) g d
-    let new_c = nextVv d j (nextHv d c collision_h) g collision_v
-    let h_cand = ((c & _loc) ^. _x) + (speedTable !! (new_c & _hv))
-    let v_cand = ((c & _loc) ^. _y) + (speedTable !! (new_c & _vv))
+    let collision_v  = collisionV (toGridCoord l) g
+    let collision_h  = collisionH (toGridCoord l) g d
+    let new_c        = nextVv d j (nextHv d c collision_h) g collision_v
+    let h_cand       = ((c & _loc) ^. _x) + (speedTable !! (new_c & _hv))
+    let v_cand       = ((c & _loc) ^. _y) + (speedTable !! (new_c & _vv))
     let platform_res = onPlatform c g
     let new_h
-          | h_cand < 0 = 0
-          | h_cand > fromIntegral width - 1 = fromIntegral width - 1
-          | otherwise = h_cand
+          | h_cand < 0 = 0                                             -- min horizontal position is 0
+          | h_cand > fromIntegral width - 1 = fromIntegral width - 1   -- max horizontal position is (width - 1)
+          | otherwise = h_cand                                         -- default: move to candidate horizontal position
     let new_v
-          | v_cand > fromIntegral height - 1 = fromIntegral height - 1
-          | j = v_cand 
-          | platform_res > 0 && not j = fromIntegral platform_res
-          | otherwise = v_cand
+          | v_cand > fromIntegral height - 1 = fromIntegral height - 1 -- max vertical position is (height - 1)
+          | platform_res > 0 && not j = fromIntegral platform_res      -- vertical position is platform if on platform and not jumping
+          | otherwise = v_cand                                         -- default: move to candidate vertical position
 
     new_c & loc .~ (V2 new_h new_v :: PreciseCoord)
 
 -- Get next horizontal velocity from the table
 nextHv :: Direction -> Character -> Bool -> Character
 nextHv d c@Character { _hv = h} collision
+    -- set horizontal velocity to 0 for horizontal collision
   | collision = c & hv .~ div maxSpeed 2
+    -- set horizontal velocities to their respective directions for left and right
   | d == LeftDir = c & hv .~ div maxSpeed 10
   | d == RightDir = c & hv .~ round (fromIntegral(maxSpeed - 1) * 0.9)
+    -- set horizontal velocity to 0 when falling straight down
   | d == DownDir = c & hv .~ div maxSpeed 2
+    -- keep going in same direction if no key input
   | d == Neutral = if h < div maxSpeed 2 then c & hv .~ h + 1 else if h > div maxSpeed 2 then c & hv .~ h - 1 else c
   | otherwise = error "invalid dir"
 
@@ -194,10 +201,17 @@ nextHv d c@Character { _hv = h} collision
 -- Get next vertical velocity from the table
 nextVv :: Direction -> Bool -> Character -> Game -> Bool -> Character
 nextVv d j c@Character { _vv = v} g collision
-  | collision && platform_val == (-1) = c & vv .~ 0    -- if in the air and collide, then set vertical velocity to max downward velocity (TODO: maybe change)
+    -- if in the air and collide, then set vertical velocity to max downward velocity (TODO: maybe change)
+  | collision && platform_val == (-1) = c & vv .~ 0
+    -- if vertical collision when trying to perform a valid jump, keep vertical velocity at 0
+  | collision && platform_val > 0 && j = c & vv .~ div maxSpeed 2
+    -- set vertical velocity to max downward on down input
   | d == DownDir = c & vv .~ 0
+    -- set vertical velocity to max upward on valid jump
   | platform_val > 0 && j = c & vv .~ (maxSpeed - 1)
+    -- keep going through speed table when in air
   | v > 0 = c & vv .~ v - 1
+    -- default: no change in vertical velocity
   | otherwise = c
   where
     platform_val = onPlatform c g 
@@ -209,7 +223,7 @@ getCoord Game { _olaf = a } 'o' = a & _loc
 
 
 skyPlatforms :: [GridCoord]
-skyPlatforms = [V2 3 3, V2 4 3, V2 5 3, V2 6 3, V2 9 6, V2 10 6, V2 11 6, V2 12 6, V2 16 10, V2 17 10, V2 18 10, V2 43 2, V2 43 1]
+skyPlatforms = [V2 2 2, V2 3 3, V2 4 3, V2 5 3, V2 6 3, V2 9 6, V2 10 6, V2 11 6, V2 12 6, V2 16 10, V2 17 10, V2 18 10, V2 43 2, V2 43 1]
 
 skyLakesE :: [GridCoord]
 skyLakesE = [V2 30 10, V2 31 10, V2 32 10, V2 33 10]
