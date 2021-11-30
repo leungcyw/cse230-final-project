@@ -112,13 +112,14 @@ drawGrid g = withBorderStyle BS.unicodeBold
     cellAt c
       | c == (toGridCoord (g ^. elsa ^. loc)) = Elsa
       | c == (toGridCoord (g ^. olaf ^. loc)) = Olaf
-      | c `elem` g ^. tokensE = TokenE
-      | c `elem` g ^. tokensO = TokenO
-      | c `elem` g ^. lakesE = LakeE
-      | c `elem` g ^. lakesO = LakeO
-      | c `elem` g ^. exits  = Exit
-      | c `elem` g ^. platform = Platform
-      | otherwise            = Empty
+      | c `elem` g ^. tokensE    = TokenE
+      | c `elem` g ^. tokensO    = TokenO
+      | c `elem` g ^. deathLakes = DeathLake
+      | c `elem` g ^. lakesE     = LakeE
+      | c `elem` g ^. lakesO     = LakeO
+      | c `elem` g ^. exits      = Exit
+      | c `elem` g ^. platform   = Platform
+      | otherwise                = Empty
 
 -- Renders cell based on type
 drawCell :: Cell -> Widget Name
@@ -126,12 +127,24 @@ drawCell Elsa = withAttr elsaAttr $ str "👩"
 drawCell Olaf = withAttr olafAttr $ str "⛄"
 drawCell TokenE = withAttr tokenEAttr $ str "🧊 "
 drawCell TokenO = withAttr tokenOAttr $ str "🥕"
+drawCell DeathLake = withAttr deathLakeAttr cellWidth
 drawCell LakeE = withAttr lakeEAttr cellWidth
 drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
 drawCell Platform = withAttr platformAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
-
+{-
+drawCell Elsa = withAttr elsaAttr cellWidth
+drawCell Olaf = withAttr olafAttr cellWidth
+drawCell TokenE = withAttr tokenEAttr cellWidth
+drawCell TokenO = withAttr tokenOAttr cellWidth 
+drawCell DeathLake = withAttr deathLakeAttr cellWidth
+drawCell LakeE = withAttr lakeEAttr cellWidth
+drawCell LakeO = withAttr lakeOAttr cellWidth
+drawCell Exit  = withAttr exitAttr cellWidth
+drawCell Platform = withAttr platformAttr cellWidth
+drawCell Empty = withAttr emptyAttr cellWidth
+-}
 cellWidth :: Widget Name
 cellWidth = str "  "
 
@@ -142,6 +155,7 @@ theMap = attrMap V.defAttr
   , (olafAttr, V.brightWhite `on` V.brightWhite)
   , (tokenEAttr, V.brightWhite `on` V.brightWhite)
   , (tokenOAttr, V.brightWhite `on` V.brightWhite)
+  , (deathLakeAttr, V.brightGreen `on` V.brightGreen)
   , (lakeEAttr, V.red `on` V.red)
   , (lakeOAttr, V.blue `on` V.blue)
   , (exitAttr, V.green `on` V.green)
@@ -150,8 +164,24 @@ theMap = attrMap V.defAttr
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   , (platformAttr, V.black `on` V.black)
   ]
+{-
+theMap = attrMap V.defAttr
+  [ (elsaAttr, V.blue `on` V.blue) 
+  , (olafAttr, V.red `on` V.red)
+  , (tokenEAttr, V.cyan `on` V.cyan)
+  , (tokenEAttr, V.magenta `on` V.magenta)
+  , (deathLakeAttr, V.brightGreen `on` V.brightGreen)
+  , (lakeEAttr, V.red `on` V.red)
+  , (lakeOAttr, V.blue `on` V.blue)
+  , (exitAttr, V.green `on` V.green)
+  , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
+  , (emptyAttr, V.brightWhite `on` V.brightWhite)
+  , (gameOverAttr, fg V.red `V.withStyle` V.bold)
+  , (platformAttr, V.black `on` V.black)
+  ]
+-}
 
-elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr :: AttrName
+elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr, deathLakeAttr :: AttrName
 elsaAttr = "elsaAttr"
 olafAttr = "olafAttr"
 tokenEAttr = "tokenEAttr"
@@ -163,3 +193,4 @@ gameOverAttr = "gameOver"
 lakeEAttr = "lakeEAttr"
 lakeOAttr = "lakeOAttr"
 platformAttr = "platformAttr"
+deathLakeAttr = "lakeAttr"

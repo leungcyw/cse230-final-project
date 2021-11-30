@@ -11,6 +11,7 @@ data Game = Game
   , _tokensO      :: [GridCoord]
   , _lakesE       :: [GridCoord]
   , _lakesO       :: [GridCoord]
+  , _deathLakes   :: [GridCoord]
   , _exits        :: [GridCoord]
   , _platform     :: [GridCoord]
   , _dead         :: Bool
@@ -57,4 +58,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform
+data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform | DeathLake
