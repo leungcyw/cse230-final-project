@@ -124,7 +124,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
 drawCell :: Cell -> Widget Name
 drawCell Elsa = withAttr elsaAttr $ str "👩"
 drawCell Olaf = withAttr olafAttr $ str "⛄"
-drawCell TokenE = withAttr tokenEAttr $ str "🧊"
+drawCell TokenE = withAttr tokenEAttr $ str "🧊 "
 drawCell TokenO = withAttr tokenOAttr $ str "🥕"
 drawCell LakeE = withAttr lakeEAttr cellWidth
 drawCell LakeO = withAttr lakeOAttr cellWidth
@@ -148,7 +148,7 @@ theMap = attrMap V.defAttr
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
-  , (platformAttr, V.white `on` V.white)
+  , (platformAttr, V.black `on` V.black)
   ]
 
 elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr :: AttrName
