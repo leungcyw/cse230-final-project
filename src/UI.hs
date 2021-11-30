@@ -72,7 +72,7 @@ drawUI g =
 
 -- Draws instruction/game over section
 drawInfo :: Game -> Widget Name
-drawInfo g = hLimit 40
+drawInfo g = hLimit 50
   $ vBox [ drawInstrs
          , drawGameOver (g ^. dead)
          , drawPassed (g ^. done)
@@ -82,29 +82,28 @@ drawInfo g = hLimit 40
 drawInstrs :: Widget Name
 drawInstrs =
   withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str "Instructions")
+  $ B.borderWithLabel (str "Elsa and Olaf")
   $ C.hCenter
   $ padAll 1
-  $ str "Press arrows to begin \n Press 'q' to quit \n Press 'r' to restart"
+  $ str "Use arrows to control Elsa \nUse 'A,' 'W, 'S,' 'D' to control Olaf \nPress 'q' to quit \nPress 'r' to restart"
 
 -- Manages "Level Failed" message
 drawGameOver :: Bool -> Widget Name
 drawGameOver dead =
   if dead
-     then withAttr gameOverAttr $ C.hCenter $ str "LEVEL FAILED"
+     then withAttr gameOverAttr $ C.hCenter $ str "LEVEL FAILED D:"
      else emptyWidget
 
 -- Manages "Level Passed" message
 drawPassed :: Bool -> Widget Name
 drawPassed done =
   if done
-     then withAttr exitMsgAttr $ C.hCenter $ str "LEVEL PASSSED!!"
+     then withAttr exitMsgAttr $ C.hCenter $ str "LEVEL PASSSED :D"
      else emptyWidget
 
 -- Draws game grid and cells
 drawGrid :: Game -> Widget Name
 drawGrid g = withBorderStyle BS.unicodeBold
-  $ B.borderWithLabel (str "Elsa and Olaf")
   $ vBox rows
   where
     rows         = [hBox $ cellsInRow r | r <- [height-1,height-2..0]]
@@ -123,10 +122,10 @@ drawGrid g = withBorderStyle BS.unicodeBold
 
 -- Renders cell based on type
 drawCell :: Cell -> Widget Name
-drawCell Elsa = withAttr elsaAttr cellWidth
-drawCell Olaf = withAttr olafAttr cellWidth
-drawCell TokenE = withAttr tokenEAttr cellWidth
-drawCell TokenO = withAttr tokenOAttr cellWidth
+drawCell Elsa = withAttr elsaAttr $ str "👩"
+drawCell Olaf = withAttr olafAttr $ str "⛄"
+drawCell TokenE = withAttr tokenEAttr $ str "🧊"
+drawCell TokenO = withAttr tokenOAttr $ str "🥕"
 drawCell LakeE = withAttr lakeEAttr cellWidth
 drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
@@ -139,14 +138,15 @@ cellWidth = str "  "
 -- Maps cell type to appearance
 theMap :: AttrMap
 theMap = attrMap V.defAttr
-  [ (elsaAttr, V.blue `on` V.blue)
-  , (olafAttr, V.red `on` V.red)
-  , (tokenEAttr, V.cyan `on` V.cyan)
-  , (tokenOAttr, V.magenta `on` V.magenta)
+  [ (elsaAttr, V.brightWhite `on` V.brightWhite)
+  , (olafAttr, V.brightWhite `on` V.brightWhite)
+  , (tokenEAttr, V.brightWhite `on` V.brightWhite)
+  , (tokenOAttr, V.brightWhite `on` V.brightWhite)
   , (lakeEAttr, V.red `on` V.red)
   , (lakeOAttr, V.blue `on` V.blue)
   , (exitAttr, V.green `on` V.green)
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
+  , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   , (platformAttr, V.white `on` V.white)
   ]
