@@ -12,6 +12,7 @@ data Game = Game
   , _lakesE       :: [GridCoord]
   , _lakesO       :: [GridCoord]
   , _exits        :: [GridCoord]
+  , _platform     :: [GridCoord]
   , _dead         :: Bool
   , _done         :: Bool
   } deriving (Show)
@@ -56,4 +57,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO
+data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform

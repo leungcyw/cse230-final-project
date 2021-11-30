@@ -118,6 +118,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
       | c `elem` g ^. lakesE = LakeE
       | c `elem` g ^. lakesO = LakeO
       | c `elem` g ^. exits  = Exit
+      | c `elem` g ^. platform = Platform
       | otherwise            = Empty
 
 -- Renders cell based on type
@@ -129,6 +130,7 @@ drawCell TokenO = withAttr tokenOAttr cellWidth
 drawCell LakeE = withAttr lakeEAttr cellWidth
 drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
+drawCell Platform = withAttr platformAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
 
 cellWidth :: Widget Name
@@ -146,9 +148,10 @@ theMap = attrMap V.defAttr
   , (exitAttr, V.green `on` V.green)
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
+  , (platformAttr, V.white `on` V.white)
   ]
 
-elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr :: AttrName
+elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr :: AttrName
 elsaAttr = "elsaAttr"
 olafAttr = "olafAttr"
 tokenEAttr = "tokenEAttr"
@@ -159,3 +162,4 @@ emptyAttr = "emptyAttr"
 gameOverAttr = "gameOver"
 lakeEAttr = "lakeEAttr"
 lakeOAttr = "lakeOAttr"
+platformAttr = "platformAttr"

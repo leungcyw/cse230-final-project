@@ -9,7 +9,7 @@ module Env
   , Game(..)
   , Direction(..)
   , Character(..)
-  , lakesE, elsa, lakesO, olaf
+  , lakesE, elsa, lakesO, olaf, platform
   , dead, tokensE, tokensO, exits, done
   , height, width
   , hv, vv, loc
@@ -49,12 +49,30 @@ step c d j s = flip execState s . runMaybeT $ do
   MaybeT (Just <$> modify checkDone) -- check if done
 
 die :: Game -> Game
-die g@Game { _lakesE = l, _lakesO = o } = do
-  if (toGridCoord(getCoord g 'e') `elem` l || toGridCoord(getCoord g 'o') `elem` o)
+die g@Game { _lakesE = e, _lakesO = o } = do
+  let elsa_coord = toGridCoord(getCoord g 'e')
+  let olaf_coord = toGridCoord(getCoord g 'o')
+  if (nextToBadLake elsa_coord e || nextToBadLake olaf_coord o)
     then
       g & dead .~ True
     else
       g
+
+nextToBadLake :: GridCoord -> [GridCoord] -> Bool
+nextToBadLake c cs = 
+  let
+    x_coord = c ^. _x;
+    y_coord = c ^. _y;
+    c1' = V2 (x_coord + 1) y_coord;
+    c2' = V2 (x_coord - 1) y_coord;
+    c3' = V2 x_coord (y_coord + 1);
+    c4' = V2 x_coord (y_coord - 1)
+  in
+    if c1' `elem` cs || c2' `elem` cs || c3' `elem` cs || c4' `elem` cs
+      then
+        True
+      else
+        False
 
 -- Done if tokens are gone and in front of exit door
 checkDone :: Game -> Game
@@ -83,17 +101,47 @@ eatTokenO g@Game { _tokensO = t } = do
       g
 
 
-canJump :: Character -> Bool
-canJump c@Character {_loc = l} =
+-- onPlatform returns the y coordinate of the platform if the character is on a platform and -1 otherwise
+onPlatform :: Character -> Game -> Int
+onPlatform c@Character {_loc = l} g@Game {_platform = p} =
   let
     coord = toGridCoord l;
-    y_val = coord ^. _y
+    y_val = (coord ^. _y) - 1; -- subtract 1 to check if on top of a platform
+    x_val = coord ^. _x
   in
-    if y_val == 0    -- TODO: change this check to check both x and y coords for platforms
+    if (V2 x_val y_val) `elem` p   
+      then
+        y_val + 1
+      else
+        (-1)
+
+
+collisionV :: GridCoord -> Game -> Bool
+collisionV (V2 x y) g@Game {_platform = p} = 
+  let 
+    hi_c = (V2 x (y+1));
+    lo_c = (V2 x (y-1))
+  in
+    if hi_c `elem` p || lo_c `elem` p
       then
         True
       else
         False
+
+
+collisionH :: GridCoord -> Game -> Direction -> Bool
+collisionH (V2 x y) g@Game {_platform = p} d =
+  let
+    left_c  = (V2 (x-1) y);
+    right_c = (V2 (x+1) y)
+  in
+    case d of
+      RightDir -> if right_c `elem` p then True else False
+      LeftDir  -> if left_c `elem` p then True else False
+      Neutral  -> if right_c `elem` p || left_c `elem` p then True else False
+      DownDir  -> False -- cannot collide horizontally when moving down
+      
+
 
 -- Represents current game state
 gameState :: State Game ()
@@ -109,25 +157,30 @@ move c d j g@Game { _elsa = e, _olaf = o }
 
 -- Finds next position of character based on direction
 nextPos :: Character -> Direction -> Bool -> Game -> Character
-nextPos c@Character {} d j g@Game {} =
+nextPos c@Character {_loc = l} d j g@Game {} =
   do
-    let new_c = nextVv d j (nextHv d c)
+    let collision_v = collisionV (toGridCoord l) g
+    let collision_h = collisionH (toGridCoord l) g d
+    let new_c = nextVv d j (nextHv d c collision_h) g collision_v
     let h_cand = ((c & _loc) ^. _x) + (speedTable !! (new_c & _hv))
     let v_cand = ((c & _loc) ^. _y) + (speedTable !! (new_c & _vv))
+    let platform_res = onPlatform c g
     let new_h
           | h_cand < 0 = 0
           | h_cand > fromIntegral width - 1 = fromIntegral width - 1
           | otherwise = h_cand
     let new_v
-          | v_cand < 0 = 0
           | v_cand > fromIntegral height - 1 = fromIntegral height - 1
+          | j = v_cand 
+          | platform_res > 0 && not j = fromIntegral platform_res
           | otherwise = v_cand
 
     new_c & loc .~ (V2 new_h new_v :: PreciseCoord)
 
 -- Get next horizontal velocity from the table
-nextHv :: Direction -> Character -> Character
-nextHv d c@Character { _hv = h}
+nextHv :: Direction -> Character -> Bool -> Character
+nextHv d c@Character { _hv = h} collision
+  | collision = c & hv .~ div maxSpeed 2
   | d == LeftDir = c & hv .~ div maxSpeed 10
   | d == RightDir = c & hv .~ round (fromIntegral(maxSpeed - 1) * 0.9)
   | d == DownDir = c & hv .~ div maxSpeed 2
@@ -139,39 +192,54 @@ nextHv d c@Character { _hv = h}
 -- | d == RightDir = if h < (maxSpeed - 1) then c & hv .~ h + 1 else c
 
 -- Get next vertical velocity from the table
-nextVv :: Direction -> Bool -> Character -> Character
-nextVv d j c@Character { _vv = v}
+nextVv :: Direction -> Bool -> Character -> Game -> Bool -> Character
+nextVv d j c@Character { _vv = v} g collision
+  | collision && platform_val == (-1) = c & vv .~ 0    -- if in the air and collide, then set vertical velocity to max downward velocity (TODO: maybe change)
   | d == DownDir = c & vv .~ 0
-  | canJump c && j = c & vv .~ (maxSpeed - 1)
+  | platform_val > 0 && j = c & vv .~ (maxSpeed - 1)
   | v > 0 = c & vv .~ v - 1
   | otherwise = c
+  where
+    platform_val = onPlatform c g 
 
 -- Get current coordinates of character
 getCoord :: Game -> Char -> PreciseCoord
 getCoord Game { _elsa = a } 'e' = a & _loc
 getCoord Game { _olaf = a } 'o' = a & _loc
 
+
+skyPlatforms :: [GridCoord]
+skyPlatforms = [V2 3 3, V2 4 3, V2 5 3, V2 6 3, V2 9 6, V2 10 6, V2 11 6, V2 12 6, V2 16 10, V2 17 10, V2 18 10, V2 43 2, V2 43 1]
+
+skyLakesE :: [GridCoord]
+skyLakesE = [V2 30 10, V2 31 10, V2 32 10, V2 33 10]
+
+skyLakesO :: [GridCoord]
+skyLakesO = [V2 20 15, V2 21 15, V2 22 16]
+
 -- Initialize game with token and character locations
+-- NOTE: lakes are platforms too. They're just scary platforms that can kill you :)  -- NZ
 initGame :: IO Game
 initGame = do
   let xm = width `div` 2
       ym = height `div` 2
       g  = Game
         { _elsa = Character {
-            _loc = V2 0.0 0.0
+            _loc = V2 0.0 1.0
             , _hv = div maxSpeed 2
             , _vv = div maxSpeed 2
           }
         , _olaf = Character {
-            _loc = V2 49.0 0.0
+            _loc = V2 49.0 1.0
             , _hv = div maxSpeed 2
             , _vv = div maxSpeed 2
           }
-        , _tokensE  = [V2 3 0, V2 5 2, V2 10 2, V2 15 2]
-        , _tokensO  = [V2 35 4, V2 28 0]
-        , _exits = [V2 25 0, V2 26 0]
-        , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0]
-        , _lakesO = [V2 30 0, V2 31 0, V2 32 0]
+        , _tokensE  = [V2 3 1, V2 5 2, V2 10 2, V2 15 2]
+        , _tokensO  = [V2 35 4, V2 28 1]
+        , _exits = [V2 25 1, V2 26 1]
+        , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ [V2 0 0, V2 1 0, V2 2 0, V2 3 0, V2 4 0, V2 5 0, V2 6 0, V2 7 0, V2 8 0, V2 9 0, V2 10 0, V2 11 0, V2 12 0, V2 13 0, V2 14 0, V2 15 0, V2 16 0, V2 17 0, V2 18 0, V2 19 0, V2 20 0, V2 21 0, V2 22 0, V2 23 0, V2 24 0, V2 25 0, V2 26 0, V2 27 0, V2 28 0, V2 29 0, V2 30 0, V2 31 0, V2 32 0, V2 33 0, V2 34 0, V2 35 0, V2 36 0, V2 37 0, V2 38 0, V2 39 0, V2 40 0, V2 41 0, V2 42 0, V2 43 0, V2 44 0, V2 45 0, V2 46 0, V2 47 0, V2 48 0, V2 49 0]
+        , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0] ++ skyLakesE
+        , _lakesO = [V2 30 0, V2 31 0, V2 32 0] ++ skyLakesO
         , _jump = False
         , _dead   = False
         , _done   = False
