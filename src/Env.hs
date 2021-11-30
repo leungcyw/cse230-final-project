@@ -136,11 +136,12 @@ collisionV (V2 x y) g@Game {_platform = p} =
         False
 
 
-collisionH :: GridCoord -> Game -> Direction -> Bool
-collisionH (V2 x y) g@Game {_platform = p} d =
+collisionH :: GridCoord -> Game -> Direction -> Int -> Bool
+collisionH (V2 x y) g@Game {_platform = p} d hv =
   let
     left_c  = (V2 (x-1) y);
-    right_c = (V2 (x+1) y)
+    right_c = (V2 (x+1) y);
+    mid = div maxSpeed 2
   in
     case d of
       -- collides if moving in direction of obstacle
@@ -148,7 +149,12 @@ collisionH (V2 x y) g@Game {_platform = p} d =
       LeftDir  -> if left_c `elem` p then True else False
 
       -- collides if character will run into obstacle
-      Neutral  -> if right_c `elem` p || left_c `elem` p then True else False
+      Neutral  -> if hv > mid then
+          right_c `elem` p
+        else if hv < mid then
+          left_c `elem` p
+        else
+          False
 
       -- cannot collide horizontally when moving down
       DownDir  -> False
@@ -169,13 +175,14 @@ move c d j g@Game { _elsa = e, _olaf = o }
 
 -- Finds next position of character based on direction
 nextPos :: Character -> Direction -> Bool -> Game -> Character
-nextPos c@Character {_loc = l} d j g@Game {} =
+nextPos c@Character {_hv = hv, _loc = l} d j g@Game {} =
   do
     let collision_v  = collisionV (toGridCoord l) g
-    let collision_h  = collisionH (toGridCoord l) g d
+    let collision_h  = collisionH (toGridCoord l) g d hv
     let new_c        = nextVv d j (nextHv d c collision_h) g collision_v
     let h_cand       = ((c & _loc) ^. _x) + (speedTable !! (new_c & _hv))
     let v_cand       = ((c & _loc) ^. _y) + (speedTable !! (new_c & _vv))
+    let cand_collision = collisionCand (toGridCoord (V2 h_cand v_cand)) g
     let platform_res = onPlatform c g
     let new_h
           | h_cand < 0 = 0                                             -- min horizontal position is 0
@@ -183,7 +190,8 @@ nextPos c@Character {_loc = l} d j g@Game {} =
           | otherwise = h_cand                                         -- default: move to candidate horizontal position
     let new_v
           | v_cand > fromIntegral height - 1 = fromIntegral height - 1 -- max vertical position is (height - 1)
-          | (collisionCand (toGridCoord (V2 h_cand v_cand)) g) = fromIntegral platform_res      -- vertical position is platform if on platform and not jumping
+          | cand_collision && not (platform_res == (-1)) = fromIntegral platform_res      -- vertical position is platform if on platform and not jumping
+          | cand_collision && (platform_res == (-1)) = ((c & _loc) ^. _y)   -- vertical position is on top of platform if colliding diagonally
           | otherwise = v_cand                                         -- default: move to candidate vertical position
 
     new_c & loc .~ (V2 new_h new_v :: PreciseCoord)
@@ -209,15 +217,17 @@ nextHv d c@Character { _hv = h} collision
 -- Get next vertical velocity from the table
 nextVv :: Direction -> Bool -> Character -> Game -> Bool -> Character
 nextVv d j c@Character { _vv = v} g collision
-    -- if in the air and collide, then set vertical velocity to max downward velocity (TODO: maybe change)
-  | collision && platform_val == (-1) = c & vv .~ 0
+    -- if in the air and collide, then set vertical velocity to 0.25 downward velocity
+  | collision && platform_val == (-1) = c & vv .~ div maxSpeed 4
     -- if vertical collision when trying to perform a valid jump, keep vertical velocity at 0
   | collision && platform_val > 0 && j = c & vv .~ div maxSpeed 2
     -- set vertical velocity to max downward on down input
   | d == DownDir = c & vv .~ 0
     -- set vertical velocity to max upward on valid jump
   | platform_val > 0 && j = c & vv .~ (maxSpeed - 1)
-    -- keep going through speed table when in air
+    -- if on the ground, constrain max downward velocity
+  | platform_val > 0 && v > 0 = if v > div maxSpeed 4 then c & vv .~ v - 1 else c
+    -- keep going through speed table
   | v > 0 = c & vv .~ v - 1
     -- default: no change in vertical velocity
   | otherwise = c
@@ -259,7 +269,7 @@ initGame = do
         , _tokensE  = [V2 3 1, V2 5 2, V2 10 2, V2 15 2]
         , _tokensO  = [V2 35 4, V2 28 1]
         , _exits = [V2 25 1, V2 26 1]
-        , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ [V2 0 0, V2 1 0, V2 2 0, V2 3 0, V2 4 0, V2 5 0, V2 6 0, V2 7 0, V2 8 0, V2 9 0, V2 10 0, V2 11 0, V2 12 0, V2 13 0, V2 14 0, V2 15 0, V2 16 0, V2 17 0, V2 18 0, V2 19 0, V2 20 0, V2 21 0, V2 22 0, V2 23 0, V2 24 0, V2 25 0, V2 26 0, V2 27 0, V2 28 0, V2 29 0, V2 30 0, V2 31 0, V2 32 0, V2 33 0, V2 34 0, V2 35 0, V2 36 0, V2 37 0, V2 38 0, V2 39 0, V2 40 0, V2 41 0, V2 42 0, V2 43 0, V2 44 0, V2 45 0, V2 46 0, V2 47 0, V2 48 0, V2 49 0]
+        , _platform = skyLakesE ++ skyLakesO ++ skyPlatforms ++ [ V2 (-1) (-1), V2 (-1) 0, V2 0 (-1), V2 0 0, V2 1 0, V2 2 0, V2 3 0, V2 4 0, V2 5 0, V2 6 0, V2 7 0, V2 8 0, V2 9 0, V2 10 0, V2 11 0, V2 12 0, V2 13 0, V2 14 0, V2 15 0, V2 16 0, V2 17 0, V2 18 0, V2 19 0, V2 20 0, V2 21 0, V2 22 0, V2 23 0, V2 24 0, V2 25 0, V2 26 0, V2 27 0, V2 28 0, V2 29 0, V2 30 0, V2 31 0, V2 32 0, V2 33 0, V2 34 0, V2 35 0, V2 36 0, V2 37 0, V2 38 0, V2 39 0, V2 40 0, V2 41 0, V2 42 0, V2 43 0, V2 44 0, V2 45 0, V2 46 0, V2 47 0, V2 48 0, V2 49 0]
         , _lakesE = [V2 7 0, V2 8 0, V2 9 0, V2 18 0, V2 19 0] ++ skyLakesE
         , _lakesO = [V2 30 0, V2 31 0, V2 32 0] ++ skyLakesO
         , _jump = False
