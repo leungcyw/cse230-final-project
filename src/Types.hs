@@ -1,6 +1,7 @@
 module Types where
 
 import Linear.V2 (V2(..), _x, _y)
+import qualified Data.Map as Map
 
 -- Used in Env.hs
 data Game = Game
@@ -14,6 +15,7 @@ data Game = Game
   , _deathLakes   :: [GridCoord]
   , _exits        :: [GridCoord]
   , _platform     :: [GridCoord]
+  , _buttons      :: Map.Map GridCoord ButtonPlatform
   , _dead         :: Bool
   , _done         :: Bool
   } deriving (Show)
@@ -26,6 +28,12 @@ data Character = Character
   { _loc      :: PreciseCoord
   , _hv       :: Int
   , _vv       :: Int
+  } deriving (Show)
+
+data ButtonPlatform = ButtonPlatform
+  { _platform_loc_init :: GridCoord
+  , _platform_loc_end  :: GridCoord
+  , _platform_loc :: GridCoord
   } deriving (Show)
 
 data Stream a = a :| Stream a
@@ -58,4 +66,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform | DeathLake
+data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform | DeathLake | Button | BPlatform

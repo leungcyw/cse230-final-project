@@ -9,7 +9,7 @@ module Env
   , Game(..)
   , Direction(..)
   , Character(..)
-  , lakesE, elsa, lakesO, olaf, platform, deathLakes
+  , lakesE, elsa, lakesO, olaf, platform, deathLakes, buttons
   , dead, tokensE, tokensO, exits, done
   , height, width
   , hv, vv, loc
@@ -25,10 +25,11 @@ import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.State
 import Control.Monad.Extra (orM)
 import Linear.V2 (V2(..), _x, _y)
+import qualified Data.Map as Map
+
 
 makeLenses ''Game
 makeLenses ''Character
-
 -- noActionStep :: Game -> Game
 -- noActionStep s = flip execState s . runMaybeT $ do
 --   MaybeT (Just <$> modify moveGravity) -- jump
@@ -47,6 +48,73 @@ step c d j s = flip execState s . runMaybeT $ do
   MaybeT (Just <$> modify eatTokenO)    -- check for token
   MaybeT (Just <$> modify die)          -- check if dead
   MaybeT (Just <$> modify checkDone)    -- check if done
+  MaybeT (Just <$> modify moveButtonPlatform)
+
+
+moveButtonPlatform :: Game -> Game
+moveButtonPlatform g@Game {_buttons = b} = do
+  let elsa_coord = toGridCoord(getCoord g 'e')
+  let olaf_coord = toGridCoord(getCoord g 'o')
+  let elsa_on_button = elsa_coord `Map.member` (g ^. buttons);
+  let olaf_on_button = olaf_coord `Map.member` (g ^. buttons);
+  if elsa_on_button && olaf_on_button && not (elsa_coord == olaf_coord) -- Case where both elsa and olaf are on different buttons (not tested yet...)
+    then
+      movePlatformOnButtonPress (movePlatformOnButtonPress g elsa_coord) olaf_coord
+    else
+      if elsa_on_button
+        then
+          movePlatformOnButtonPress g elsa_coord
+        else if olaf_on_button
+          then
+            movePlatformOnButtonPress g olaf_coord
+          else
+            moveAllPlatformsPassively g elsa_coord olaf_coord
+
+movePlatformOnButtonPress :: Game -> GridCoord -> Game
+movePlatformOnButtonPress g@Game {_buttons = b} c@(V2 x y) =
+  let 
+    buttonPlatform = Map.findWithDefault (error "movePlatform: the button data should always be found") c b;
+    initLoc = _platform_loc_init buttonPlatform;
+    endLoc = _platform_loc_end buttonPlatform;
+    (V2 curX curY) = _platform_loc buttonPlatform;
+    direction = platformDirection initLoc endLoc;
+    nextY = if curY == endLoc ^. _y then curY else curY + direction;
+    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = (V2 curX nextY)}
+  in
+    g & buttons .~ (Map.insert c newPlatform b)
+
+
+moveAllPlatformsPassively :: Game -> GridCoord -> GridCoord -> Game
+moveAllPlatformsPassively g@Game {_buttons = b} elsa_coord olaf_coord =
+  let
+    unactivePlatforms = Map.toList $ Map.filterWithKey (\k _ -> not (k == elsa_coord) && not (k == olaf_coord)) b
+  in
+    foldl movePlatformPassively g unactivePlatforms
+
+
+movePlatformPassively :: Game -> (GridCoord, ButtonPlatform) -> Game
+movePlatformPassively g@Game {_buttons = b} (c, bp) =
+  let
+    initLoc = _platform_loc_init bp;
+    endLoc = _platform_loc_end bp;
+    (V2 curX curY) = _platform_loc bp;
+    direction = platformDirection initLoc endLoc;
+    nextY = if curY == initLoc ^. _y then curY else curY - direction;
+    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = (V2 curX nextY)}
+  in
+    g & buttons .~ (Map.insert c newPlatform b)
+
+
+platformDirection :: GridCoord -> GridCoord -> Int
+platformDirection (V2 _ y1) (V2 _ y2) =
+  if y1 < y2
+    then
+      1
+    else
+      (-1)
+
+
+
 
 die :: Game -> Game
 die g@Game { _lakesE = e, _lakesO = o } = do
@@ -271,11 +339,20 @@ initGame = do
         , _lakesE = initLakesE ++ initDeathLakes
         , _lakesO = initLakesO ++ initDeathLakes
         , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
         , _jump = False
         , _dead   = False
         , _done   = False
         }
   return $ execState gameState g
+
+
+buttonPlatforms :: [(GridCoord, ButtonPlatform)]
+buttonPlatforms = 
+  [
+    ((V2 3 1),  ButtonPlatform {_platform_loc_init = (V2 20 2), _platform_loc_end = (V2 20 7), _platform_loc = (V2 20 2)})
+  , ((V2 25 1), ButtonPlatform {_platform_loc_init = (V2 5 26), _platform_loc_end = (V2 5 18), _platform_loc = (V2 5 26)})
+  ]
 
 initLocE :: PreciseCoord
 initLocE = V2 0.0 1.0

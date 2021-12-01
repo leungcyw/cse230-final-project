@@ -24,6 +24,7 @@ import Brick.BChan (newBChan, writeBChan)
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Center as C
+import qualified Data.Map as Map
 import Control.Lens ((^.))
 import qualified Graphics.Vty as V
 import Linear.V2 (V2(..))
@@ -106,6 +107,8 @@ drawGrid :: Game -> Widget Name
 drawGrid g = withBorderStyle BS.unicodeBold
   $ vBox rows
   where
+    bPlatformData = map (\a -> _platform_loc (snd a)) (Map.toList (g ^. buttons))
+    bPlatformExpand = concat $ map expand bPlatformData
     rows         = [hBox $ cellsInRow r | r <- [height-1,height-2..0]]
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt
@@ -118,8 +121,11 @@ drawGrid g = withBorderStyle BS.unicodeBold
       | c `elem` g ^. lakesE     = LakeE
       | c `elem` g ^. lakesO     = LakeO
       | c `elem` g ^. exits      = Exit
+      | c `Map.member` (g ^. buttons) = Button
+      | c `elem` bPlatformExpand = BPlatform
       | c `elem` g ^. platform   = Platform
       | otherwise                = Empty
+    expand p@(V2 x y) = [p, V2 (x+1) y, V2 (x+2) y]
 
 -- Renders cell based on type
 drawCell :: Cell -> Widget Name
@@ -133,6 +139,8 @@ drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
 drawCell Platform = withAttr platformAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
+drawCell Button = withAttr buttonAttr $ str "=="
+drawCell BPlatform = withAttr buttonPlatformAttr cellWidth
 {-
 drawCell Elsa = withAttr elsaAttr cellWidth
 drawCell Olaf = withAttr olafAttr cellWidth
@@ -144,6 +152,8 @@ drawCell LakeO = withAttr lakeOAttr cellWidth
 drawCell Exit  = withAttr exitAttr cellWidth
 drawCell Platform = withAttr platformAttr cellWidth
 drawCell Empty = withAttr emptyAttr cellWidth
+drawCell Button = withAttr buttonAttr $ str "=="
+drawCell BPlatform = withAttr buttonPlatformAttr cellWidth
 -}
 
 cellWidth :: Widget Name
@@ -164,6 +174,8 @@ theMap = attrMap V.defAttr
   , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   , (platformAttr, V.black `on` V.black)
+  , (buttonAttr, V.black `on` V.brightWhite)
+  , (buttonPlatformAttr, V.brightBlue `on` V.brightBlue)
   ]
 {-
 theMap = attrMap V.defAttr
@@ -179,10 +191,12 @@ theMap = attrMap V.defAttr
   , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   , (platformAttr, V.black `on` V.black)
+  , (buttonAttr, V.black `on` V.brightWhite)
+  , (buttonPlatformAttr, V.brightBlue `on` V.brightBlue)
   ]
 -}
 
-elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr, deathLakeAttr :: AttrName
+elsaAttr, tokenEAttr, tokenOAttr, exitAttr, exitMsgAttr, emptyAttr, gameOverAttr, lakeEAttr, lakeOAttr, olafAttr, platformAttr, deathLakeAttr, buttonAttr, buttonPlatformAttr :: AttrName
 elsaAttr = "elsaAttr"
 olafAttr = "olafAttr"
 tokenEAttr = "tokenEAttr"
@@ -195,3 +209,5 @@ lakeEAttr = "lakeEAttr"
 lakeOAttr = "lakeOAttr"
 platformAttr = "platformAttr"
 deathLakeAttr = "lakeAttr"
+buttonAttr = "buttonAttr"
+buttonPlatformAttr = "buttonPlatformAttr"
