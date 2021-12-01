@@ -125,7 +125,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
 drawCell :: Cell -> Widget Name
 drawCell Elsa = withAttr elsaAttr $ str "👩"
 drawCell Olaf = withAttr olafAttr $ str "⛄"
-drawCell TokenE = withAttr tokenEAttr $ str "🧊 "
+drawCell TokenE = withAttr tokenEAttr $ str "🧊"
 drawCell TokenO = withAttr tokenOAttr $ str "🥕"
 drawCell DeathLake = withAttr deathLakeAttr cellWidth
 drawCell LakeE = withAttr lakeEAttr cellWidth
