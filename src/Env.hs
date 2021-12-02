@@ -1,20 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Env
-  ( initGame
-  , step
-  -- , noActionStep
-  , move
-  , Game(..)
-  , Direction(..)
-  , Character(..)
-  , lakesE, elsa, lakesO, olaf, platform, deathLakes, buttons
-  , dead, tokensE, tokensO, exits, done
-  , height, width
-  , hv, vv, loc
-  , toGridCoord
-  ) where
+module Env where
+
 import Types
 import Control.Monad (guard)
 import Data.Maybe (fromMaybe)
