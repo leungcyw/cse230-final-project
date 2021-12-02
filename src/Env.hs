@@ -403,7 +403,7 @@ buttonPlatforms :: [(GridCoord, ButtonPlatform)]
 buttonPlatforms = 
   [
     ((V2 3 1),  ButtonPlatform {_platform_loc_init = (V2 20 2), _platform_loc_end = (V2 20 7), _platform_loc = (V2 20 2)})
-  , ((V2 25 1), ButtonPlatform {_platform_loc_init = (V2 5 26), _platform_loc_end = (V2 5 18), _platform_loc = (V2 5 26)})
+  , ((V2 25 1), ButtonPlatform {_platform_loc_init = (V2 5 26), _platform_loc_end = (V2 5 19), _platform_loc = (V2 5 26)})
   ]
 
 initLocE :: PreciseCoord
