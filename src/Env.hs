@@ -61,14 +61,14 @@ moveButtonPlatform g@Game {_buttons = b} = do
     then
       movePlatformOnButtonPress (movePlatformOnButtonPress g elsa_coord) olaf_coord
     else
-      if elsa_on_button
+      if elsa_on_button && not olaf_on_button
         then
-          movePlatformOnButtonPress g elsa_coord
+          moveAllPlatformsPassively (movePlatformOnButtonPress g elsa_coord) [elsa_coord]
         else if olaf_on_button
           then
-            movePlatformOnButtonPress g olaf_coord
+            moveAllPlatformsPassively (movePlatformOnButtonPress g olaf_coord) [olaf_coord]
           else
-            moveAllPlatformsPassively g elsa_coord olaf_coord
+            moveAllPlatformsPassively g [elsa_coord, olaf_coord]
 
 movePlatformOnButtonPress :: Game -> GridCoord -> Game
 movePlatformOnButtonPress g@Game {_buttons = b} c@(V2 x y) =
@@ -84,10 +84,10 @@ movePlatformOnButtonPress g@Game {_buttons = b} c@(V2 x y) =
     g & buttons .~ (Map.insert c newPlatform b)
 
 
-moveAllPlatformsPassively :: Game -> GridCoord -> GridCoord -> Game
-moveAllPlatformsPassively g@Game {_buttons = b} elsa_coord olaf_coord =
+moveAllPlatformsPassively :: Game -> [GridCoord] -> Game
+moveAllPlatformsPassively g@Game {_buttons = b} pressed_coords =
   let
-    unactivePlatforms = Map.toList $ Map.filterWithKey (\k _ -> not (k == elsa_coord) && not (k == olaf_coord)) b
+    unactivePlatforms = Map.toList $ Map.filterWithKey (\k _ -> not (k `elem` pressed_coords)) b
   in
     foldl movePlatformPassively g unactivePlatforms
 
