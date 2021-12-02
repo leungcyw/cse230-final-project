@@ -108,7 +108,7 @@ drawGrid g = withBorderStyle BS.unicodeBold
   $ vBox rows
   where
     bPlatformData = map (\a -> _platform_loc (snd a)) (Map.toList (g ^. buttons))
-    bPlatformExpand = concat $ map expand bPlatformData
+    bPlatformExpand = concat $ map getAllGridCoordsForButtonPlatform bPlatformData
     rows         = [hBox $ cellsInRow r | r <- [height-1,height-2..0]]
     cellsInRow y = [drawCoord (V2 x y) | x <- [0..width-1]]
     drawCoord    = drawCell . cellAt
@@ -125,7 +125,6 @@ drawGrid g = withBorderStyle BS.unicodeBold
       | c `elem` bPlatformExpand = BPlatform
       | c `elem` g ^. platform   = Platform
       | otherwise                = Empty
-    expand p@(V2 x y) = [p, V2 (x+1) y, V2 (x+2) y]
 
 -- Renders cell based on type
 drawCell :: Cell -> Widget Name

@@ -45,18 +45,32 @@ moveButtonPlatform g@Game {_buttons = b} = do
   let olaf_coord = toGridCoord(getCoord g 'o')
   let elsa_on_button = elsa_coord `Map.member` (g ^. buttons);
   let olaf_on_button = olaf_coord `Map.member` (g ^. buttons);
-  if elsa_on_button && olaf_on_button && not (elsa_coord == olaf_coord) -- Case where both elsa and olaf are on different buttons (not tested yet...)
+
+  -- Case where both elsa and olaf are on different buttons:
+  --    1. Move platform cooresponding to elsa's button
+  --    2. Move platform corresponding to olaf's button
+  --    3. Move all other platforms passively
+  if elsa_on_button && olaf_on_button && not (elsa_coord == olaf_coord)
     then
-      movePlatformOnButtonPress (movePlatformOnButtonPress g elsa_coord) olaf_coord
+      moveAllPlatformsPassively (movePlatformOnButtonPress (movePlatformOnButtonPress g elsa_coord) olaf_coord) [elsa_coord, olaf_coord]
     else
+      -- Case where only elsa is on a button and olaf is not:
+      --    1. Move platform cooresponding to elsa's button
+      --    2. Move all other platforms passively
       if elsa_on_button && not olaf_on_button
         then
           moveAllPlatformsPassively (movePlatformOnButtonPress g elsa_coord) [elsa_coord]
-        else if olaf_on_button
-          then
-            moveAllPlatformsPassively (movePlatformOnButtonPress g olaf_coord) [olaf_coord]
-          else
-            moveAllPlatformsPassively g [elsa_coord, olaf_coord]
+        else
+          -- Case where only olaf is on a button (elsa is not on a button or they are on the same button)
+          --    1. Move platform cooresponding to olaf's button
+          --    2. Move all other platforms passively
+          if olaf_on_button
+            then
+              moveAllPlatformsPassively (movePlatformOnButtonPress g olaf_coord) [olaf_coord]
+            else
+              -- Case where neither character is on a button
+              --    1. Move all platforms passively
+              moveAllPlatformsPassively g []
 
 movePlatformOnButtonPress :: Game -> GridCoord -> Game
 movePlatformOnButtonPress g@Game {_buttons = b} c@(V2 x y) =
@@ -67,9 +81,46 @@ movePlatformOnButtonPress g@Game {_buttons = b} c@(V2 x y) =
     (V2 curX curY) = _platform_loc buttonPlatform;
     direction = platformDirection initLoc endLoc;
     nextY = if curY == endLoc ^. _y then curY else curY + direction;
-    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = (V2 curX nextY)}
+    nextLoc = (V2 curX nextY);
+    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = nextLoc};
+    g' = updateCharacterLocOnButtonPlatformCollision g nextLoc direction
   in
-    g & buttons .~ (Map.insert c newPlatform b)
+    g' & buttons .~ (Map.insert c newPlatform b)
+
+
+updateCharacterLocOnButtonPlatformCollision :: Game -> GridCoord -> Int -> Game
+updateCharacterLocOnButtonPlatformCollision g@Game { _elsa = e, _olaf = o } platform_loc direction =
+  let 
+    elsa_coord = toGridCoord(getCoord g 'e');
+    olaf_coord = toGridCoord(getCoord g 'o');
+    platform_locs = getAllGridCoordsForButtonPlatform platform_loc;
+    collide_elsa = elsa_coord `elem` platform_locs;
+    collide_olaf = olaf_coord `elem` platform_locs;
+  in
+    if collide_elsa && collide_olaf
+      then
+        let
+          new_elsa = moveCharacterForButtonPlatformCollision e direction
+          new_olaf = moveCharacterForButtonPlatformCollision o direction
+        in
+          (g & elsa .~ new_elsa) & olaf .~ new_olaf
+      else
+        if collide_elsa
+          then 
+            g & elsa .~ (moveCharacterForButtonPlatformCollision e direction)
+          else
+            if collide_olaf
+              then
+                g & olaf .~ (moveCharacterForButtonPlatformCollision o direction)
+              else
+                g
+
+    
+
+moveCharacterForButtonPlatformCollision :: Character -> Int -> Character
+moveCharacterForButtonPlatformCollision c@Character {_loc = (V2 x y)} 1    = c & loc .~ (V2 x (y+1) :: PreciseCoord)
+moveCharacterForButtonPlatformCollision c@Character {_loc = (V2 x y)} (-1) = c & loc .~ (V2 x (y-1) :: PreciseCoord)
+moveCharacterForButtonPlatformCollision _ _ = error "moveCharacterForButtonPlatformCollision: Should only have arguments 1 and -1 for movement"
 
 
 moveAllPlatformsPassively :: Game -> [GridCoord] -> Game
@@ -88,9 +139,11 @@ movePlatformPassively g@Game {_buttons = b} (c, bp) =
     (V2 curX curY) = _platform_loc bp;
     direction = platformDirection initLoc endLoc;
     nextY = if curY == initLoc ^. _y then curY else curY - direction;
-    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = (V2 curX nextY)}
+    nextLoc = (V2 curX nextY);
+    newPlatform = ButtonPlatform {_platform_loc_init = initLoc, _platform_loc_end = endLoc, _platform_loc = nextLoc}
+    g' = updateCharacterLocOnButtonPlatformCollision g nextLoc (direction * (-1))
   in
-    g & buttons .~ (Map.insert c newPlatform b)
+    g' & buttons .~ (Map.insert c newPlatform b)
 
 
 platformDirection :: GridCoord -> GridCoord -> Int
@@ -100,8 +153,6 @@ platformDirection (V2 _ y1) (V2 _ y2) =
       1
     else
       (-1)
-
-
 
 
 die :: Game -> Game
@@ -165,7 +216,7 @@ onPlatform c@Character {_loc = l} g@Game {_platform = p} =
     y_val = (coord ^. _y) - 1; -- subtract 1 to check if character is on top of a platform
     x_val = coord ^. _x
   in
-    if (V2 x_val y_val) `elem` p   
+    if (V2 x_val y_val) `elem` p || (V2 x_val y_val) `elem` getButtonPlatformLocs g
       then
         y_val + 1
       else
@@ -174,7 +225,7 @@ onPlatform c@Character {_loc = l} g@Game {_platform = p} =
 -- collisionCand returns a Bool depending on if a candidate location would cause a collision
 collisionCand :: GridCoord -> Game -> Bool
 collisionCand cand@(V2 x y) g@Game {_platform = p} = 
-    if cand `elem` p
+    if cand `elem` p || cand `elem` getButtonPlatformLocs g
       then
         True
       else
@@ -185,7 +236,7 @@ collisionV (V2 x y) g@Game {_platform = p} =
   let 
     hi_c = (V2 x (y+1))
   in
-    if hi_c `elem` p
+    if hi_c `elem` p || hi_c `elem` getButtonPlatformLocs g
       then
         True
       else
@@ -193,22 +244,25 @@ collisionV (V2 x y) g@Game {_platform = p} =
 
 
 collisionH :: GridCoord -> Game -> Direction -> Int -> Bool
-collisionH (V2 x y) g@Game {_platform = p} d hv =
+collisionH (V2 x y) g@Game {_platform = p, _buttons = b} d hv =
   let
+    button_platform_locs = getButtonPlatformLocs g
     left_c  = (V2 (x-1) y);
     right_c = (V2 (x+1) y);
-    mid = div maxSpeed 2
+    mid = div maxSpeed 2;
+    right_collide = right_c `elem` p || right_c `elem` button_platform_locs
+    left_collide = left_c `elem` p || left_c `elem` button_platform_locs
   in
     case d of
       -- collides if moving in direction of obstacle
-      RightDir -> if right_c `elem` p then True else False
-      LeftDir  -> if left_c `elem` p then True else False
+      RightDir -> right_collide
+      LeftDir  -> left_collide
 
       -- collides if character will run into obstacle
       Neutral  -> if hv > mid then
-          right_c `elem` p
+          right_collide
         else if hv < mid then
-          left_c `elem` p
+          left_collide
         else
           False
 
@@ -216,6 +270,16 @@ collisionH (V2 x y) g@Game {_platform = p} d hv =
       DownDir  -> False
       
 
+getAllGridCoordsForButtonPlatform :: GridCoord -> [GridCoord]
+getAllGridCoordsForButtonPlatform p@(V2 x y) = [p, V2 (x+1) y, V2 (x+2) y]
+
+
+getButtonPlatformLocs :: Game -> [GridCoord]
+getButtonPlatformLocs g@Game {_buttons = b} = 
+  let
+    button_platform_locs = map (\x -> _platform_loc $ snd x) $ Map.toList b;
+  in
+    concat $ map getAllGridCoordsForButtonPlatform button_platform_locs
 
 -- Represents current game state
 gameState :: State Game ()
