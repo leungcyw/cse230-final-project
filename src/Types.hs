@@ -18,7 +18,7 @@ data Game = Game
   , _buttons      :: Map.Map GridCoord ButtonPlatform
   , _dead         :: Bool
   , _done         :: Bool
-  } deriving (Show)
+  } deriving (Eq, Show)
 
 type GridCoord = V2 Int
 
@@ -28,16 +28,16 @@ data Character = Character
   { _loc      :: PreciseCoord
   , _hv       :: Int
   , _vv       :: Int
-  } deriving (Show)
+  } deriving (Eq, Show)
 
 data ButtonPlatform = ButtonPlatform
   { _platform_loc_init :: GridCoord
   , _platform_loc_end  :: GridCoord
   , _platform_loc :: GridCoord
-  } deriving (Show)
+  } deriving (Eq, Show)
 
 data Stream a = a :| Stream a
-  deriving (Show)
+  deriving (Eq, Show)
 
 data Direction
   = Neutral
