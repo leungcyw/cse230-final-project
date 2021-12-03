@@ -172,7 +172,7 @@ theMap = attrMap V.defAttr
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
-  , (platformAttr, V.black `on` V.black)
+  , (platformAttr, V.white `on` V.white)
   , (buttonAttr, V.black `on` V.brightWhite)
   , (buttonPlatformAttr, V.brightBlue `on` V.brightBlue)
   ]

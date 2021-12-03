@@ -1,3 +1,5 @@
+.PHONY: all test clean ghcid distclean
+
 install:
 	stack install elsa
 clean:
@@ -5,5 +7,5 @@ clean:
 run:
 	stack install elsa
 	~/.local/bin/elsa
-unit:
+test:
 	stack test --test-arguments="--num-threads 1"
