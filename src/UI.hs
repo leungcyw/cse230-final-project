@@ -86,7 +86,20 @@ drawInstrs =
   $ B.borderWithLabel (str "Elsa and Olaf")
   $ C.hCenter
   $ padAll 1
-  $ str "Use arrows to control Elsa \nUse 'A,' 'W, 'S,' 'D' to control Olaf \nPress 'q' to quit \nPress 'r' to restart"
+  $ str (
+         "Objective: Move Olaf and Elsa to collect\n" ++
+         "the tokens and reach the green exit doors.\n\n" ++
+         "Elsa: Controlled by the arrow keys, collects\n" ++
+         "ice cubes, is safe in blue lakes, and dies in\n" ++
+         "red and yellow lakes.\n\n" ++
+         "Olaf: Conrolled by 'A,' 'W, 'S,' 'D,' collects\n" ++
+         "carrots, is safe in red lakes, and dies in\n" ++
+         "blue or yellow lakes.\n\n" ++
+         "Stand on the buttons ('==') to move the black\n" ++
+         "platforms\n\n" ++
+         "Press 'q' to quit \n" ++
+         "Press 'r' to restart"
+        )
 
 -- Manages "Level Failed" message
 drawGameOver :: Bool -> Widget Name
@@ -165,16 +178,16 @@ theMap = attrMap V.defAttr
   , (olafAttr, V.brightWhite `on` V.brightWhite)
   , (tokenEAttr, V.brightWhite `on` V.brightWhite)
   , (tokenOAttr, V.brightWhite `on` V.brightWhite)
-  , (deathLakeAttr, V.brightGreen `on` V.brightGreen)
+  , (deathLakeAttr, V.yellow `on` V.yellow)
   , (lakeEAttr, V.red `on` V.red)
   , (lakeOAttr, V.blue `on` V.blue)
-  , (exitAttr, V.green `on` V.green)
+  , (exitAttr, V.brightGreen `on` V.brightGreen)
   , (exitMsgAttr, fg V.green `V.withStyle` V.bold)
   , (emptyAttr, V.brightWhite `on` V.brightWhite)
   , (gameOverAttr, fg V.red `V.withStyle` V.bold)
   , (platformAttr, V.white `on` V.white)
   , (buttonAttr, V.black `on` V.brightWhite)
-  , (buttonPlatformAttr, V.brightBlue `on` V.brightBlue)
+  , (buttonPlatformAttr, V.black `on` V.black)
   ]
 {-
 theMap = attrMap V.defAttr
