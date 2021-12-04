@@ -15,8 +15,15 @@ boundaryPlatforms = ground ++ wall_l ++ wall_r ++ ceiling
 buttonPlatforms :: [(GridCoord, ButtonPlatform)]
 buttonPlatforms = 
   [
-    ((V2 3 1),  ButtonPlatform {_platform_loc_init = (V2 20 2), _platform_loc_end = (V2 20 7), _platform_loc = (V2 20 2)})
-  , ((V2 25 1), ButtonPlatform {_platform_loc_init = (V2 5 26), _platform_loc_end = (V2 5 18), _platform_loc = (V2 5 26)})
+    ((V2 49 18),  ButtonPlatform {_platform_loc_init = (V2 37 19), _platform_loc_end = (V2 37 45), _platform_loc = (V2 37 19)})
+  , ((V2 33 43), ButtonPlatform {_platform_loc_init = (V2 45 19), _platform_loc_end = (V2 45 42), _platform_loc = (V2 45 19)})
+  ]
+
+updatedButtonPlatforms :: [(GridCoord, ButtonPlatform)]
+updatedButtonPlatforms = 
+  [
+    ((V2 33 43), ButtonPlatform {_platform_loc_init = (V2 45 19), _platform_loc_end = (V2 45 42), _platform_loc = (V2 45 19)})
+  , ((V2 49 18),  ButtonPlatform {_platform_loc_init = (V2 37 19), _platform_loc_end = (V2 37 45), _platform_loc = (V2 37 19)})
   ]
 
 initLocE :: PreciseCoord
@@ -77,6 +84,7 @@ defaultGame  = Game
         , _dead   = False
         , _done   = False
         }
+
 testGameTokEB :: Game
 testGameTokEB  = Game
         { _elsa = Character {
@@ -227,6 +235,131 @@ testGameDeadAfter  = Game
         , _done   = False
         }
 
+testGameDeadBefore2 :: Game
+testGameDeadBefore2  = Game
+        { _elsa = Character {
+            _loc = (V2 0.0 1.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 9.0 5.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = []
+        , _tokensO  = []
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+testGameDeadAfter2 :: Game
+testGameDeadAfter2  = Game
+        { _elsa = Character {
+            _loc = (V2 0.0 1.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 9.0 5.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = []
+        , _tokensO  = []
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = True
+        , _done   = False
+        }
+
+testGameDeadBefore3 :: Game
+testGameDeadBefore3  = Game
+        { _elsa = Character {
+            _loc = (V2 0.0 1.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 16.0 18.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = []
+        , _tokensO  = []
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+testGameDeadAfter3 :: Game
+testGameDeadAfter3  = Game
+        { _elsa = Character {
+            _loc = (V2 0.0 1.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 16.0 18.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = []
+        , _tokensO  = []
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = True
+        , _done   = False
+        }
+
+testGameDeadBefore4 :: Game
+testGameDeadBefore4  = Game
+        { _elsa = Character {
+            _loc = (V2 9.0 5.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 9.0 1.0)
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = []
+        , _tokensO  = []
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }  
+
 testGameDoneBefore :: Game
 testGameDoneBefore  = Game
         { _elsa = Character {
@@ -290,3 +423,153 @@ testOffPlat = Character {
             , _hv = div maxSpeed 2
             , _vv = div maxSpeed 2
           }
+          
+buttonGame :: Game
+buttonGame = Game
+        { _elsa = Character {
+            _loc = V2 49.0 19.0
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = initLocO
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+buttonGameAfter :: Game
+buttonGameAfter = Game
+        { _elsa = Character {
+            _loc = V2 49.0 19.0
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = initLocO
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList updatedButtonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+defaultGameAfterMoveR :: Game
+defaultGameAfterMoveR  = Game
+        { _elsa = Character {
+            _loc = (V2 0.316743 1.0)
+            , _hv = 89
+            , _vv = 49
+          }
+        , _olaf = Character {
+            _loc = initLocO
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+defaultGameAfterMoveL :: Game
+defaultGameAfterMoveL  = Game
+        { _elsa = Character {
+            _loc = initLocE
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 0.683257 1.0)
+            , _hv = 10
+            , _vv = 49
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+defaultGameAfterMoveD :: Game
+defaultGameAfterMoveD  = Game
+        { _elsa = Character {
+            _loc = initLocE
+            , _hv = div maxSpeed 2
+            , _vv = 0
+          }
+        , _olaf = Character {
+            _loc = initLocO
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
+
+defaultGameAfterMoveU :: Game
+defaultGameAfterMoveU  = Game
+        { _elsa = Character {
+            _loc = initLocE
+            , _hv = div maxSpeed 2
+            , _vv = div maxSpeed 2
+          }
+        , _olaf = Character {
+            _loc = (V2 1.0 1.5)
+            , _hv = 50
+            , _vv = 99
+          }
+        , _tokensE  = initTokensE
+        , _tokensO  = initTokensO
+        , _exits = initExits
+        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+        , _lakesE = initLakesE ++ initDeathLakes
+        , _lakesO = initLakesO ++ initDeathLakes
+        , _deathLakes = initDeathLakes
+        , _buttons = Map.fromList buttonPlatforms
+        , _jump = False
+        , _dead   = False
+        , _done   = False
+        }
