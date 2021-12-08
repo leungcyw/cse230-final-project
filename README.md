@@ -4,7 +4,7 @@ Group Members: Eric Ke (ericke8), Christina Leung (leungcyw), Yiming Zhao (yimin
 
 For this project, we would like to implement a spinoff of the popular game [Fireboy and Watergirl](https://www.coolmathgames.com/0-fireboy-and-water-girl-in-the-forest-temple), Elsa and Olaf. In our game, we seek to create a world wherein two characters must collaborate to overcome obstacles, collect tokens, and reach the exit door. We also aim to introduce a fun, new, interactive feature where users can provide a text file as input, which will then be parsed into a unique level.
 
-<img src="https://i.imgur.com/dytigqQ.png" alt="game" width="500"/>
+<img src="https://i.imgur.com/dytigqQ.png" alt="original-game" width="500"/>
 
 *A screenshot of the original Fireboy and Watergirl game*
 
@@ -55,4 +55,26 @@ For the next steps, we plan on implementing the following:
 - User-inputted levels
 
 # Modifying Our Goals
-Instead of including interactive buttons and levers inside of our game, we will first aim to implement only one of the two. This is because buttons and levers both result in an animation of another game object (being a moveable platform), which would iterate through a set number of time steps (i.e. not instantaneous). The difficulty would be to compute collisions while two objects (the moving platform and the character) require movement in the same time step. Because buttons and levers trigger platform movement under different conditions, we would like to first focus on collision logic before focusing on the different conditions for moveable platforms. 
+Instead of including interactive buttons and levers inside of our game, we will first aim to implement only one of the two. This is because buttons and levers both result in an animation of another game object (being a moveable platform), which would iterate through a set number of time steps (i.e. not instantaneous). The difficulty would be to compute collisions while two objects (the moving platform and the character) require movement in the same time step. Because buttons and levers trigger platform movement under different conditions, we would like to first focus on collision logic before focusing on the different conditions for movable platforms. 
+
+# Setup Instructions
+Clone the game using:
+```git clone https://github.com/leungcyw/cse230-final-project```
+
+Next, run the game with the command:
+```stack run```
+
+# How to Play
+<img src="" alt="haskell-game" width="500"/>
+The main objective of the game is to collect the tokens (🥕 and 🧊) and reach the exit doors (represented by the bright green squares) without either character dying in the poisonous lakes.
+
+<img src="" alt="level-fail" width="500"/>
+Elsa (👩) can be controlled using the four arrow keys on the keyboard. The up, right, and left arrows are used to move the character in the respective direction, while the down arrow can be used to put a brake on the character's movements, or to accelerate a fall downwards. Elsa's character is immune to the blue lakes, but will instantly die when coming into contact with the red or yellow lakes. In addition, Elsa can only collect the ice cube tokens.
+
+On the other hand, Olaf (⛄) is controlled by the 'W,' 'D,' 'A,' and 'S' characters, which map to up, right, left, and down. The same movement logic for Elsa applies to Olaf. Olaf is resistant to red lakes, but will instantly die from blue or yellow lakes. Olaf's token is the carrot.
+
+<img src="" alt="platform" width="500"/>
+To aid their mission, there are moving platforms controlled by buttons inside the game. When a character moves onto a button, represented by '==,' the button's corresponding platform will move.
+
+<img src="" alt="level-pass" width="500"/>
+As shown above, the level is passed when both players reach the exit doors. The 'r' character can be pressed to restart the game, and the 'q' character can be pressed to quit the game.
