@@ -65,16 +65,16 @@ Next, run the game with the command:
 ```stack run```
 
 # How to Play
-<img src="" alt="haskell-game" width="500"/>
+<img src="https://user-images.githubusercontent.com/29551590/145275869-8d8aad4c-cd9e-4723-aeeb-5d8209722f76.png" alt="haskell-game" width="500"/>
 The main objective of the game is to collect the tokens (🥕 and 🧊) and reach the exit doors (represented by the bright green squares) without either character dying in the poisonous lakes.
 
-<img src="" alt="level-fail" width="500"/>
+<img src="https://user-images.githubusercontent.com/29551590/145275796-670c5660-3571-4152-ac55-81a0dfb294e6.gif" alt="level-fail" width="500"/>
 Elsa (👩) can be controlled using the four arrow keys on the keyboard. The up, right, and left arrows are used to move the character in the respective direction, while the down arrow can be used to put a brake on the character's movements, or to accelerate a fall downwards. Elsa's character is immune to the blue lakes, but will instantly die when coming into contact with the red or yellow lakes. In addition, Elsa can only collect the ice cube tokens.
 
 On the other hand, Olaf (⛄) is controlled by the 'W,' 'D,' 'A,' and 'S' characters, which map to up, right, left, and down. The same movement logic for Elsa applies to Olaf. Olaf is resistant to red lakes, but will instantly die from blue or yellow lakes. Olaf's token is the carrot.
 
-<img src="" alt="platform" width="500"/>
+<img src="https://user-images.githubusercontent.com/29551590/145275537-926ef691-0436-4d68-92a6-441fac8fd050.gif" alt="platform" width="500"/>
 To aid their mission, there are moving platforms controlled by buttons inside the game. When a character moves onto a button, represented by '==,' the button's corresponding platform will move.
 
-<img src="" alt="level-pass" width="500"/>
+<img src="https://user-images.githubusercontent.com/29551590/145275644-a71ce022-27f9-42be-abd8-d245e617037a.gif" alt="level-pass" width="500"/>
 As shown above, the level is passed when both players reach the exit doors. The 'r' character can be pressed to restart the game, and the 'q' character can be pressed to quit the game.
