@@ -8,6 +8,7 @@ import Data.Maybe (fromMaybe)
 
 import Types
 import Env
+import Parse
 
 import Brick
   ( App(..), AttrMap, BrickEvent(..), EventM, Next, Widget
@@ -44,10 +45,31 @@ main = do
   forkIO $ forever $ do
     writeBChan chan Tick
     threadDelay 10000 -- controls how fast game moves
-  g <- initGame
+  g <- initGame defaultGameState
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
   void $ customMain initialVty builder (Just chan) app g
+
+customInit1 :: IO Game
+customInit1 = do
+  g <- parseFile "levels/level1.txt"
+  case g of
+    Left l -> error ("Error: " ++ (show l))
+    Right r -> return r
+
+customInit2 :: IO Game
+customInit2 = do
+  g <- parseFile "levels/level2.txt"
+  case g of
+    Left l -> error ("Error: " ++ (show l))
+    Right r -> return r
+
+customInit3 :: IO Game
+customInit3 = do
+  g <- parseFile "levels/level3.txt"
+  case g of
+    Left l -> error ("Error: " ++ (show l))
+    Right r -> return r
 
 -- Handles keyboard events
 handleEvent :: Game -> BrickEvent Name Tick -> EventM Name (Next Game)
@@ -61,7 +83,19 @@ handleEvent g (VtyEvent (V.EvKey (V.KChar 's') [])) = continue $ step 'o' DownDi
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'd') [])) = continue $ step 'o' RightDir False g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'a')[]))  = continue $ step 'o' LeftDir False g
 
-handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = liftIO initGame >>= continue
+handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) = liftIO (initGame defaultGameState) >>= continue
+handleEvent g (VtyEvent (V.EvKey (V.KChar '1') [])) = do
+  x <- liftIO customInit1
+  r <- liftIO (initGame x)
+  continue r
+handleEvent g (VtyEvent (V.EvKey (V.KChar '2') [])) = do
+  x <- liftIO customInit2
+  r <- liftIO (initGame x)
+  continue r
+handleEvent g (VtyEvent (V.EvKey (V.KChar '3') [])) = do
+  x <- liftIO customInit3
+  r <- liftIO (initGame x)
+  continue r
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt g
 
 handleEvent g _                                     = continue  $ step 'x' Neutral False g
@@ -98,7 +132,8 @@ drawInstrs =
          "Stand on the buttons ('==') to move the black\n" ++
          "platforms\n\n" ++
          "Press 'q' to quit \n" ++
-         "Press 'r' to restart"
+         "Press 'r' to restart\n\n" ++
+         "Press numbers '1,' '2,' and '3,' to load up to\n3 custom levels you can design"
         )
 
 -- Manages "Level Failed" message
