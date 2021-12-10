@@ -25,6 +25,9 @@ makeLenses ''Character
 toGridCoord :: PreciseCoord -> GridCoord
 toGridCoord (V2 x_f y_f) = (V2 (floor x_f) (floor y_f))
 
+toPreciseCoord :: GridCoord -> PreciseCoord
+toPreciseCoord (V2 x_f y_f) = (V2  (fromIntegral x_f) (fromIntegral y_f))
+
 -- | Step triggered by action
 step :: Char -> Direction -> Bool -> Game -> Game
 step c d j s = flip execState s . runMaybeT $ do
@@ -369,33 +372,33 @@ boundaryPlatforms = ground ++ wall_l ++ wall_r ++ ceiling
 
 -- Initialize game with token and character locations
 -- NOTE: lakes are platforms too. They're just scary platforms that can kill you :)  -- NZ
-initGame :: IO Game
-initGame = do
-  let xm = width `div` 2
-      ym = height `div` 2
-      g  = Game
-        { _elsa = Character {
-            _loc = initLocE
-            , _hv = div maxSpeed 2
-            , _vv = div maxSpeed 2
-          }
-        , _olaf = Character {
-            _loc = initLocO
-            , _hv = div maxSpeed 2
-            , _vv = div maxSpeed 2
-          }
-        , _tokensE  = initTokensE
-        , _tokensO  = initTokensO
-        , _exits = initExits
-        , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
-        , _lakesE = initLakesE ++ initDeathLakes
-        , _lakesO = initLakesO ++ initDeathLakes
-        , _deathLakes = initDeathLakes
-        , _buttons = Map.fromList buttonPlatforms
-        , _jump = False
-        , _dead   = False
-        , _done   = False
-        }
+defaultGameState :: Game
+defaultGameState = Game { 
+    _elsa = Character {
+      _loc = initLocE
+      , _hv = div maxSpeed 2
+      , _vv = div maxSpeed 2
+    }
+  , _olaf = Character {
+      _loc = initLocO
+      , _hv = div maxSpeed 2
+      , _vv = div maxSpeed 2
+    }
+  , _tokensE  = initTokensE
+  , _tokensO  = initTokensO
+  , _exits = initExits
+  , _platform = initLakesE ++ initLakesO ++ initDeathLakes ++ initPlatform ++ boundaryPlatforms
+  , _lakesE = initLakesE ++ initDeathLakes
+  , _lakesO = initLakesO ++ initDeathLakes
+  , _deathLakes = initDeathLakes
+  , _buttons = Map.fromList buttonPlatforms
+  , _jump = False
+  , _dead   = False
+  , _done   = False
+  }
+
+initGame :: Game -> IO Game
+initGame g = do
   return $ execState gameState g
 
 
