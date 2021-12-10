@@ -1,5 +1,3 @@
--- {-# LANGUAGE FlexibleContexts          #-}
--- {-# LANGUAGE ConstraintKinds           #-}
 module Parse where
 
 import qualified Data.Map as Map
@@ -12,74 +10,11 @@ import Linear.V2 (V2(..), _x, _y)
 import Types
 import Env
 
--- type MonadGame m = (MonadState BuildingGameState m)
-
--- readCoords :: (MonadGame m) => Cell -> m [GridCoord]
--- readCoords x = do 
---   GS _ s <- get 
---   return (Map.findWithDefault [] x s)
-
--- appendCoords :: (MonadGame m) => Cell -> GridCoord -> m ()
--- appendCoords x v = do 
---   GS c s <- get
---   let s' = Map.insertWith (++) x [v] s
---   put (GS c s')
-
 nextCell :: GridCoord -> GridCoord
 nextCell (V2 x y) = do
     let new_y = if x >= width - 1 then y - 1 else y
     let new_x = if x >= width - 1 then 0 else x + 1
     (V2 new_x new_y)
-
--- gameP :: BuildingGameState -> Parser BuildingGameState
--- gameP g@GS{curCoord = c@(V2 x y), gStore = s} = do
---     if x >= width - 1 && y <= 0 then 
---         return g
---     else do
---         g' <- try(emptyP g) <|> try(elsaP g) <|> try(olafP g) <|> try(platformP g) <|> try(exitP g)
---         gameP g'
-
--- skipSpaces :: Parser ()
--- skipSpaces = skipMany space
-
--- emptyP :: BuildingGameState -> Parser BuildingGameState
--- emptyP g@GS{curCoord = c, gStore = s} = do
---     skipSpaces
---     string "-"
---     skipSpaces
---     return GS{curCoord = nextCell c, gStore = s}
-
--- elsaP :: BuildingGameState -> Parser BuildingGameState
--- elsaP g@GS{curCoord = c, gStore = s} = do
---     skipSpaces
---     string "EC"
---     skipSpaces
---     let s' = Map.insert Elsa [c] s
---     return GS{curCoord = nextCell c, gStore = s'}
-
--- olafP :: BuildingGameState -> Parser BuildingGameState
--- olafP g@GS{curCoord = c, gStore = s} = do
---     skipSpaces
---     string "OC"
---     skipSpaces
---     let s' = Map.insert Olaf [c] s
---     return GS{curCoord = nextCell c, gStore = s'}
-
--- exitP :: BuildingGameState -> Parser BuildingGameState
--- exitP g@GS{curCoord = c, gStore = s} = do
---     skipSpaces
---     string "EX"
---     skipSpaces
---     let s' = Map.insertWith (++) Exit [c] s
---     return GS{curCoord = nextCell c, gStore = s'}
-
--- platformP :: BuildingGameState -> Parser BuildingGameState
--- platformP g@GS{curCoord = c, gStore = s} = do
---     skipSpaces
---     string "PL"
---     skipSpaces
---     let s' = Map.insertWith (++) Platform [c] s
---     return GS{curCoord = nextCell c, gStore = s'}
 
 gameP :: GridCoord -> Game -> Parser Game
 gameP c@(V2 x y) g = do
@@ -94,6 +29,8 @@ gameP c@(V2 x y) g = do
           <|> try(eLakeP c g)
           <|> try(oLakeP c g)
           <|> try(dLakeP c g)
+          <|> try(eTokenP c g)
+          <|> try(oTokenP c g)
         gameP (nextCell c) g'
 
 skipSpaces :: Parser ()
@@ -167,13 +104,21 @@ dLakeP c@(V2 x y) g = do
     let g4 = (g3 & platform .~ (g3 ^. platform ++ [c]))
     return g4
 
--- parseFile :: FilePath -> IO (Either ParseError BuildingGameState)
--- parseFile f = do
---     let g = GS {
---         curCoord = (V2 0 (height - 1)),
---         gStore = Map.empty
---     }
---     parseFromFile (gameP g) f
+eTokenP :: GridCoord -> Game -> Parser Game
+eTokenP c@(V2 x y) g = do
+    skipSpaces
+    string "ET"
+    skipSpaces
+    let g' = (g & tokensE .~ (g ^. tokensE ++ [c]))
+    return g'
+
+oTokenP :: GridCoord -> Game -> Parser Game
+oTokenP c@(V2 x y) g = do
+    skipSpaces
+    string "OT"
+    skipSpaces
+    let g' = (g & tokensO .~ (g ^. tokensO ++ [c]))
+    return g'
 
 parseFile :: FilePath -> IO (Either ParseError Game)
 parseFile f = do
@@ -201,49 +146,3 @@ parseFile f = do
         , _done   = False
         }
     parseFromFile (gameP (V2 0 (height - 1)) g) f
-
--- readCoords :: Cell -> Store -> Bool -> [GridCoord]
--- readCoords x s required = do 
---   case Map.lookup x s of
---     Just v  -> v
---     Nothing -> if required then error ("Missing Required Values for " ++ show x) else []
-
-
--- buildGame :: BuildingGameState -> Game
--- buildGame GS{curCoord = c, gStore = s} = do
---     let elsa_loc = toPreciseCoord (head (readCoords Elsa s True))
---     let olaf_loc = toPreciseCoord (head (readCoords Olaf s True))
-
---     let tok_e = readCoords TokenE s False
---     let tok_o = readCoords TokenO s False
-
---     let exits_loc = readCoords Exit s True
---     let platforms_loc = readCoords Platform s False
-
---     let lakes_e = readCoords LakeE s False
---     let lakes_o = readCoords LakeO s False
---     let lakes_d = readCoords DeathLake s False
-
---     Game { 
---         _elsa = Character {
---             _loc = elsa_loc
---             , _hv = div maxSpeed 2
---             , _vv = div maxSpeed 2
---             }
---         , _olaf = Character {
---             _loc = olaf_loc
---             , _hv = div maxSpeed 2
---             , _vv = div maxSpeed 2
---             }
---         , _tokensE  = tok_e
---         , _tokensO  = tok_o
---         , _exits = exits_loc
---         , _platform = lakes_e ++ lakes_o ++ lakes_d ++ platforms_loc ++ boundaryPlatforms
---         , _lakesE = lakes_e ++ lakes_d
---         , _lakesO = lakes_o ++ lakes_d
---         , _deathLakes = lakes_d
---         , _buttons = Map.empty
---         , _jump   = False
---         , _dead   = False
---         , _done   = False
---         }

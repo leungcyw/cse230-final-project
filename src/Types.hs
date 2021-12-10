@@ -66,11 +66,4 @@ data Tick = Tick -- Can be used to mark time
 
 type Name = ()
 
-data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform | DeathLake | Button | BPlatform --deriving (Ord, Eq, Show)
-
--- type Store = Map.Map Cell [GridCoord]
-
--- data BuildingGameState = GS 
---   { curCoord :: GridCoord
---   , gStore :: Store
---   } deriving (Show)
+data Cell = Elsa | Olaf | TokenE | TokenO | Exit | Empty | LakeE | LakeO | Platform | DeathLake | Button | BPlatform

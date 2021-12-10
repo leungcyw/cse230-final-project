@@ -132,7 +132,8 @@ drawInstrs =
          "Stand on the buttons ('==') to move the black\n" ++
          "platforms\n\n" ++
          "Press 'q' to quit \n" ++
-         "Press 'r' to restart"
+         "Press 'r' to restart\n\n" ++
+         "Press numbers '1,' '2,' and '3,' to load up to\n3 custom levels you can design"
         )
 
 -- Manages "Level Failed" message

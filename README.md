@@ -78,3 +78,18 @@ To aid their mission, there are moving platforms controlled by buttons inside th
 
 <img src="https://user-images.githubusercontent.com/29551590/145275644-a71ce022-27f9-42be-abd8-d245e617037a.gif" alt="level-pass" width="800"/>
 As shown above, the level is passed when both players reach the exit doors. The 'r' character can be pressed to restart the game, and the 'q' character can be pressed to quit the game.
+<br />
+<br />
+We have also implemented a parser to read in ASCII text files for users to generate their own levels.  This way, users can design their own levels using the provided templates within the levels folder.  Using the numeric keys '1,' '2,' and '3,' will allow the user to load up to three unique user-designed stages at a time from their correspondingly named text files within the levels folder.  Within the ASCII files, we use the following designations:
+
+| ASCII Text | Game Object                      |
+|------------|----------------------------------|
+| -          | Empty                            |
+| EC         | Elsa Character Starting Position |
+| OC         | Olaf Character Starting Position |
+| EX         | Exit                             |
+| EL         | Elsa Lakes                       |
+| OL         | Olaf Lakes                       |
+| DL         | Death Lakes                      |
+| ET         | Elsa Tokens                      |
+| OT         | Olaf Tokens                      |
